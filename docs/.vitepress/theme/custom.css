@@ -1,0 +1,23 @@
+/* 数学公式样式优化 */
+.katex {
+  font-size: 1.1em !important;
+  color: #7dd3fc !important; /* 浅蓝色，更醒目 */
+}
+
+.katex-display {
+  margin: 1em 0 !important;
+  padding: 0.5em !important;
+  background: rgba(125, 211, 252, 0.05) !important;
+  border-radius: 4px !important;
+}
+
+/* 行内公式稍微大一点 */
+.katex .mord {
+  font-size: 1.05em !important;
+}
+
+/* 上标下标更清晰 */
+.katex .mord .mrel,
+.katex .mord .mbin {
+  font-size: 1.1em !important;
+}

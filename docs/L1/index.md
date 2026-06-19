@@ -2,7 +2,6 @@
 
 > 共 20 个考点，适合编程零基础入门学习
 
----
 
 ## 一、程序基础（01–04）
 
@@ -37,7 +36,6 @@ int main() {
 - 每条语句以分号 `;` 结尾
 - `#include` 和 `using` 语句末尾**不加**分号
 
----
 
 ### 02. 变量与声明 — int / long long / double / char / bool / string
 
@@ -70,7 +68,6 @@ string f = "hello";      // 字符串（双引号）
 - `int` 范围不够时要用 `long long`
 - 变量名不能以数字开头，不能用关键字（如 `int`, `class`）
 
----
 
 ### 03. 常量与字面量 — 字面量后缀、const 修饰、宏定义 #define
 
@@ -101,7 +98,6 @@ const double PI = 3.14159;
 - `#define` 是文本替换，没有类型检查，容易出错
 - 竞赛中常用 `const int N = 1e5 + 5;`
 
----
 
 ### 04. 输入输出 — cin / cout / scanf / printf / getline
 
@@ -146,7 +142,6 @@ scanf("%s", str);        // 遇空格停
 - `scanf` 变量前要加 `&`（取地址），`printf` 不用
 - `cin` 和 `scanf` 不要混用，容易出错
 
----
 
 ## 二、运算符（05–09）
 
@@ -179,7 +174,6 @@ else cout << "奇数";
 - `7 % 3 = 1`，取模结果的符号与被除数相同
 - `-7 % 3 = -1`（不是 2）
 
----
 
 ### 06. 关系与逻辑 — == != < > <= >= 与 && || !
 
@@ -222,7 +216,6 @@ if (x != 0 && 10 / x > 2) { } // 不会除零
 - `&&` 和 `||` 有短路效应
 - `!` 优先级高于 `&&` 和 `||`
 
----
 
 ### 07. 位运算基础 — & | ^ ~ << >> 应用于整型
 
@@ -261,7 +254,6 @@ int t = a ^ b ^ a;            // t = b（交换）
 - `<<` `>>` 优先级低于算术运算符，必要时加括号
 - 位运算只能用于整数类型
 
----
 
 ### 08. 自增自减 — i++ ++i i-- --i 前后置区别
 
@@ -290,7 +282,6 @@ int y = x++ + ++x;  // 未定义行为！不要这样写
 - 在表达式中使用时有区别，但应避免在同一变量上多次自增
 - 循环中推荐用 `++i`（某些情况下效率略高）
 
----
 
 ### 09. 赋值复合 — = += -= *= /= %= 简写
 
@@ -330,7 +321,6 @@ for (int i = 1; i <= 100; i++) {
 - `*=` 不是指针运算
 - 复合赋值比直接赋值更简洁，推荐使用
 
----
 
 ## 三、程序结构（10–16）
 
@@ -361,7 +351,6 @@ int m = a > b ? a : b;     // 取较大值
 - 顺序结构是最简单的结构，不需要特殊语法
 - 三元运算符 `条件 ? 值1 : 值2` 是 if-else 的简写
 
----
 
 ### 11. 单/双分支 — if / if-else / 嵌套 if
 
@@ -402,7 +391,6 @@ int t = a; a = b; b = t;
 - 没有花括号 `{}` 时，`if/else` 只控制紧随的一条语句
 - 常见错误：`if (a = 5)` 写成了赋值而非比较
 
----
 
 ### 12. 多分支 switch — switch-case-default-break 配套
 
@@ -455,7 +443,6 @@ switch (grade) {
 - 忘记 `break` 会导致穿透到下一个 case
 - `default` 可选，放在最后处理
 
----
 
 ### 13. while 循环 — 先判后执行、死循环条件
 
@@ -493,7 +480,6 @@ while (1) { }
 - `while (n)` 等价于 `while (n != 0)`
 - 注意循环变量的初始化位置
 
----
 
 ### 14. do-while 循环 — 至少执行一次的循环
 
@@ -525,7 +511,6 @@ cout << "猜对了！";
 - 与 `while` 的区别：至少执行一次
 - 适合"先做再说"的场景
 
----
 
 ### 15. for 循环 — 三段式：初始化 / 条件 / 步进
 
@@ -560,7 +545,6 @@ for (int i = 10; i > 0; i--) { }      // 倒序
 - `for (int i = 0; ...)` 中 `i` 的作用域仅在循环内
 - 嵌套循环中内层变量名不要与外层冲突
 
----
 
 ### 16. 循环控制 — break 跳出 / continue 跳过本轮
 
@@ -599,7 +583,6 @@ for (int i = 0; i < 3; i++) {
 - `continue` 跳过的是**当前轮**，不是退出循环
 - `break` 在 `switch` 中用于终止 case
 
----
 
 ## 四、字符与类型（17–18）
 
@@ -654,7 +637,6 @@ if (ch >= 'a' && ch <= 'z') cout << "小写字母";
 - 大写转小写 `+32`，小写转大写 `-32`
 - `'0'` 到 `'9'` 是连续的，可以直接用 `ch - '0'` 转数字
 
----
 
 ### 18. 类型转换 — 隐式 / 强制 (int)x / static_cast
 
@@ -697,133 +679,4 @@ cout << (double)7 / 2 << endl; // 3.5
 - `int` 转 `double` 是安全的，`double` 转 `int` 可能丢失精度
 - 整数除法 `7 / 2 = 3`，不是 3.5
 
----
-
-## 五、库的使用（19–20）
-
-### 19. 头文件 — #include &lt;iostream&gt; &lt;cstdio&gt; &lt;cmath&gt;
-
-**概念**
-- 头文件提供各种功能的函数和类
-- `#include` 在程序编译前将头文件内容插入
-
-**常用头文件**
-| 头文件 | 功能 | 常用内容 |
-|:---|:---|:---|
-| `&lt;iostream&gt;` | 输入输出 | `cin`, `cout`, `endl` |
-| `&lt;cstdio&gt;` | C风格输入输出 | `scanf`, `printf` |
-| `&lt;cmath&gt;` | 数学函数 | `abs`, `sqrt`, `pow`, `sin` |
-| `&lt;algorithm&gt;` | 算法 | `sort`, `max`, `min`, `swap` |
-| `&lt;string&gt;` | 字符串 | `string`, `getline` |
-| `&lt;cstring&gt;` | 字符数组 | `strlen`, `strcpy` |
-| `&lt;cstdlib&gt;` | 通用工具 | `rand`, `srand`, `system` |
-| `&lt;climits&gt;` | 整数限制 | `INT_MAX`, `INT_MIN` |
-
-**代码模板**
-```cpp
-#include <iostream>    // cin, cout
-#include <cmath>       // sqrt, pow, abs
-#include <algorithm>   // sort, max, min, swap
-#include <string>      // string, getline
-#include <climits>     // INT_MAX, INT_MIN
-
-using namespace std;
-
-int main() {
-    cout << INT_MAX << endl;    // 输出 int 最大值
-    cout << sqrt(16.0) << endl; // 4.0
-    return 0;
-}
-```
-
-**易错点**
-- 头文件名用**尖括号** `<>`，自己写的文件用**双引号** `""`
-- `using namespace std;` 可以省略写 `std::` 前缀
-- 头文件末尾**不加分号**
-
----
-
-### 20. 常用库函数 — abs / max / min / swap / sqrt / pow
-
-**概念**
-- 标准库提供大量现成函数，避免重复造轮子
-- 使用前需包含对应头文件
-
-**常用函数**
-| 函数 | 头文件 | 功能 | 示例 |
-|:---|:---:|:---|:---|
-| `abs(x)` | `&lt;cmath&gt;` | 绝对值 | `abs(-5)` → 5 |
-| `max(a,b)` | `&lt;algorithm&gt;` | 较大值 | `max(3,5)` → 5 |
-| `min(a,b)` | `&lt;algorithm&gt;` | 较小值 | `min(3,5)` → 3 |
-| `swap(a,b)` | `&lt;algorithm&gt;` | 交换两值 | `swap(a,b)` |
-| `sqrt(x)` | `&lt;cmath&gt;` | 平方根 | `sqrt(16.0)` → 4.0 |
-| `pow(a,b)` | `&lt;cmath&gt;` | 幂运算 | `pow(2,3)` → 8.0 |
-| `round(x)` | `&lt;cmath&gt;` | 四舍五入 | `round(3.5)` → 4.0 |
-| `floor(x)` | `&lt;cmath&gt;` | 向下取整 | `floor(3.7)` → 3.0 |
-
-**代码模板**
-```cpp
-#include <iostream>
-#include <cmath>
-#include <algorithm>
-using namespace std;
-
-int main() {
-    cout << abs(-5) << endl;       // 5
-    cout << max(3, 5) << endl;     // 5
-    cout << min(3, 5) << endl;     // 3
-    
-    int a = 3, b = 5;
-    swap(a, b);                    // a=5, b=3
-    
-    cout << sqrt(16.0) << endl;    // 4.0
-    cout << pow(2, 10) << endl;    // 1024.0
-    cout << round(3.5) << endl;    // 4.0
-    
-    // 判断闰年（综合运用）
-    int y;
-    cin >> y;
-    if ((y % 4 == 0 && y % 100 != 0) || y % 400 == 0)
-        cout << "闰年";
-    else
-        cout << "平年";
-    
-    return 0;
-}
-```
-
-**易错点**
-- `abs()` 对整数和浮点数都可用，但需注意头文件
-- `max` / `min` 需要 `&lt;algorithm&gt;`，不是 `&lt;cmath&gt;`
-- `pow` 返回 `double`，转 `int` 需要强制转换
-- `sqrt` 参数和返回值都是 `double`
-
----
-
-## 附录：GESP L1 考点速查表
-
-| 编号 | 考点 | 关键词 |
-|:---:|:---|:---|
-| 01 | 程序骨架 | main函数、return 0、注释 |
-| 02 | 变量与声明 | int/long long/double/char/bool/string |
-| 03 | 常量与字面量 | 字面量后缀、const、#define |
-| 04 | 输入输出 | cin/cout/scanf/printf/getline |
-| 05 | 算术运算符 | + - * / %、整除、取模 |
-| 06 | 关系与逻辑 | == != < > <= >= && \|\| ! |
-| 07 | 位运算基础 | & \| ^ ~ << >> |
-| 08 | 自增自减 | i++ ++i 前后置区别 |
-| 09 | 赋值复合 | = += -= *= /= %= |
-| 10 | 顺序结构 | 自上而下执行 |
-| 11 | 单/双分支 | if / if-else / 嵌套 |
-| 12 | 多分支 switch | switch-case-default-break |
-| 13 | while 循环 | 先判后执行 |
-| 14 | do-while 循环 | 至少执行一次 |
-| 15 | for 循环 | 初始化/条件/步进 |
-| 16 | 循环控制 | break / continue |
-| 17 | 字符与 ASCII | '0'=48 'A'=65 'a'=97 |
-| 18 | 类型转换 | 隐式/强制/static_cast |
-| 19 | 头文件 | #include 与常用库 |
-| 20 | 常用库函数 | abs/max/min/swap/sqrt/pow |
-
----
 
