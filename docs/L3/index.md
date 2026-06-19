@@ -1,16 +1,48 @@
-# GESP C++ 三级（L3 进阶）知识点整理
+# GESP C++ 三级知识点整理（修正版）
 
-> 共 20 个考点，涵盖结构体、文件操作、递归回溯、STL 算法等
+> 共 7 个知识块，严格匹配 GESP Level 3 考试大纲
+> 
+> 涵盖：数据编码、进制转换、位运算、算法概念与描述、枚举法与模拟法、一维数组、字符串
 
 ---
 
-## 一、结构体（01–04）
+## 一、数据编码 — 原码、反码、补码
 
-### 01. 二维数组 — 矩阵、网格存储
+### 1.1 三种编码方式
 
 **概念**
-- 二维数组用于存储矩阵、网格等二维数据
-- `a[i][j]` 表示第 i 行第 j 列
+- 计算机中整数以二进制形式存储，有三种表示方式
+- **原码**：最高位为符号位（0正1负），其余位为绝对值
+- **反码**：正数反码 = 原码；负数反码 = 符号位不变，其余位取反
+- **补码**：正数补码 = 原码；负数补码 = 反码 + 1
+
+**关键规则**
+
+| 编码 | 正数 | 负数 |
+|:---:|:---:|:---:|
+| 原码 | 直接表示 | 符号位为1，其余为绝对值 |
+| 反码 | 同原码 | 符号位为1，其余位取反 |
+| 补码 | 同原码 | 反码 + 1 |
+
+**示例：+5 和 -5（以8位为例）**
+```
++5 的原码: 00000101
++5 的反码: 00000101
++5 的补码: 00000101
+
+-5 的原码: 10000101
+-5 的反码: 11111010
+-5 的补码: 11111011
+```
+
+**补码的特殊值**
+```
+0 的补码: 00000000（唯一）
+-128 的补码: 10000000（无对应原码）
+8位补码范围: -128 ~ 127
+```
+
+### 1.2 补码运算规则
 
 **代码模板**
 ```cpp
@@ -18,1311 +50,767 @@
 using namespace std;
 
 int main() {
-    // 声明与初始化
-    int a[3][4] = {
-        {1, 2, 3, 4},
-        {5, 6, 7, 8},
-        {9, 10, 11, 12}
-    };
+    // 验证补码运算：5 + (-3) = 2
+    int a = 5;    // 补码: 00000101
+    int b = -3;   // 补码: 11111101
+    
+    // 补码相加
+    int sum = a + b;  // 结果: 00000010 = 2 ✓
+    cout << "5 + (-3) = " << sum << endl;
+    
+    // 验证 -5 的补码
+    int x = -5;
+    unsigned int ux = (unsigned int)x;
+    cout << "-5 的补码（无符号解释）: " << ux << endl;  // 251 = 11111011
+    
+    // 验证 0 的补码唯一性
+    int zero = 0;
+    unsigned int uzero = (unsigned int)zero;
+    cout << "0 的补码: " << uzero << endl;  // 0
+    
+    return 0;
+}
+```
 
-    // 按行遍历
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 4; j++) {
-            cout << a[i][j] << "\t";
+**易错点**
+- 0 的补码只有一种表示（全0），没有 +0 和 -0 的区别
+- 8位补码中 -128 没有对应的原码表示
+- 正数的原码、反码、补码三者相同
+- 负数的补码需要先取反再加1得到原码
+
+---
+
+## 二、进制转换 — 二进制、八进制、十进制、十六进制
+
+### 2.1 进制基础
+
+**概念**
+- **十进制**：逢十进一，数码 0-9
+- **二进制**：逢二进一，数码 0-1
+- **八进制**：逢八进一，数码 0-7
+- **十六进制**：逢十六进一，数码 0-9, A-F（a-f）
+
+**各进制前缀表示**
+```
+十进制: 123
+二进制: 0b1111011 或 0B1111011
+八进制: 0173
+十六进制: 0x7B
+```
+
+### 2.2 转换方法
+
+**十进制 → 二进制：除2取余法**
+```
+例：十进制 13 → 二进制
+13 ÷ 2 = 6 ... 1 (最低位)
+ 6 ÷ 2 = 3 ... 0
+ 3 ÷ 2 = 1 ... 1
+ 1 ÷ 2 = 0 ... 1 (最高位)
+结果: 1101
+```
+
+**二进制 → 十进制：按权展开法**
+```
+例：二进制 1101 → 十进制
+= 1×2³ + 1×2² + 0×2¹ + 1×2⁰
+= 8 + 4 + 0 + 1
+= 13
+```
+
+**二进制 ↔ 八进制（每3位一组）**
+```
+二进制: 110 101 → 八进制: 65
+八进制: 65 → 二进制: 110 101
+```
+
+**二进制 ↔ 十六进制（每4位一组）**
+```
+二进制: 1101 0111 → 十六进制: D7
+十六进制: D7 → 二进制: 1101 0111
+```
+
+### 2.3 代码模板
+
+```cpp
+#include <iostream>
+#include <string>
+#include <algorithm>
+using namespace std;
+
+// 十进制转二进制（字符串）
+string decToBin(int n) {
+    if (n == 0) return "0";
+    string result = "";
+    bool neg = false;
+    if (n < 0) { neg = true; n = -n; }
+    while (n > 0) {
+        result += (n % 2) + '0';
+        n /= 2;
+    }
+    if (neg) result += "-";
+    reverse(result.begin(), result.end());
+    return result;
+}
+
+// 二进制转十进制
+int binToDec(string bin) {
+    int result = 0;
+    for (char c : bin) {
+        result = result * 2 + (c - '0');
+    }
+    return result;
+}
+
+// 十进制转十六进制
+string decToHex(int n) {
+    if (n == 0) return "0";
+    string result = "";
+    while (n > 0) {
+        int r = n % 16;
+        if (r < 10) result += (r + '0');
+        else result += (r - 10 + 'A');
+        n /= 16;
+    }
+    reverse(result.begin(), result.end());
+    return result;
+}
+
+int main() {
+    cout << "13 的二进制: " << decToBin(13) << endl;      // 1101
+    cout << "1101 的十进制: " << binToDec("1101") << endl; // 13
+    cout << "255 的十六进制: " << decToHex(255) << endl;   // FF
+    
+    // 利用系统函数验证
+    int x = 13;
+    cout << "oct: " << oct << x << endl;    // 15
+    cout << "dec: " << dec << x << endl;    // 13
+    cout << "hex: " << hex << x << endl;    // d
+    
+    return 0;
+}
+```
+
+**易错点**
+- 十进制转二进制时要从下往上读余数
+- 八进制每3位对应二进制，十六进制每4位对应
+- 进制转换不涉及小数部分（GESP三级只要求整数）
+- 注意0的特殊处理，避免死循环
+
+---
+
+## 三、位运算 — &、|、~、^、<<、>>
+
+### 3.1 位运算符一览
+
+| 运算符 | 名称 | 规则 | 示例 |
+|:---:|:---:|:---:|:---:|
+| `&` | 按位与 | 两位都为1结果为1 | `5 & 3 = 1` |
+| `\|` | 按位或 | 至少一位为1结果为1 | `5 \| 3 = 7` |
+| `~` | 按位取反 | 0变1，1变0 | `~0 = -1` |
+| `^` | 按位异或 | 不同为1，相同为0 | `5 ^ 3 = 6` |
+| `<<` | 左移 | 所有位左移，右边补0 | `1 << 3 = 8` |
+| `>>` | 右移 | 所有位右移，左边补符号位 | `8 >> 2 = 2` |
+
+**二进制示例**
+```
+5 的二进制: 00000101
+3 的二进制: 00000011
+
+5 & 3 = 00000001 = 1
+5 | 3 = 00000111 = 7
+5 ^ 3 = 00000110 = 6
+```
+
+### 3.2 位运算常见技巧
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    int a = 12, b = 10;
+    
+    // 1. 交换两个数（不需要临时变量）
+    a = a ^ b;  // a = 12 ^ 10
+    b = a ^ b;  // b = 12 ^ 10 ^ 10 = 12
+    a = a ^ b;  // a = 12 ^ 10 ^ 12 = 10
+    cout << "交换后: a=" << a << ", b=" << b << endl;
+    
+    // 2. 判断奇偶
+    int n = 7;
+    if (n & 1) cout << n << " 是奇数" << endl;
+    else cout << n << " 是偶数" << endl;
+    
+    // 3. 求2的幂次
+    int x = 4;  // 2^2
+    if (x > 0 && (x & (x - 1)) == 0)
+        cout << x << " 是2的幂" << endl;
+    
+    // 4. 左移右移
+    int val = 5;
+    cout << val << " << 2 = " << (val << 2) << endl;  // 20 (×4)
+    cout << val << " >> 1 = " << (val >> 1) << endl;  // 2  (÷2)
+    
+    // 5. 取指定位
+    int num = 0b11010110;
+    int bit3 = (num >> 3) & 1;  // 取第3位
+    cout << "第3位: " << bit3 << endl;
+    
+    // 6. 设置指定位为1
+    num = num | (1 << 2);  // 将第2位置1
+    
+    // 7. 清除指定位
+    num = num & ~(1 << 2); // 将第2位置0
+    
+    return 0;
+}
+```
+
+**易错点**
+- `~` 是按位取反，不是逻辑非！`~0 = -1`（补码全1）
+- 左移 `<<` 相当于乘以2的幂次，右移 `>>` 相当于除以2的幂次
+- 异或 `^` 的性质：`a ^ a = 0`，`a ^ 0 = a`
+- 位运算优先级低于比较运算符，加括号更安全
+
+---
+
+## 四、算法的概念与描述 — 自然语言、流程图、伪代码
+
+### 4.1 算法的基本概念
+
+**概念**
+- **算法**：解决特定问题的一系列明确指令的集合
+- **算法的五大特性**：有穷性、确定性、可行性、输入、输出
+
+**算法的评价标准**
+- **时间复杂度**：算法执行所需时间的增长趋势
+- **空间复杂度**：算法执行所需存储空间的增长趋势
+
+### 4.2 三种描述方式
+
+**① 自然语言描述**
+```
+【求两个数的最大值】
+步骤1：输入两个整数 a 和 b
+步骤2：如果 a 大于等于 b，则最大值为 a
+步骤3：否则，最大值为 b
+步骤4：输出最大值
+```
+
+**② 流程图描述**
+```
+┌─────────┐
+│  开始    │
+└────┬────┘
+     ▼
+┌─────────┐
+│ 输入a,b │
+└────┬────┘
+     ▼
+┌─────────────┐    是
+│   a >= b?   ├───────┐
+└─────┬───────┘       │
+      │ 否            ▼
+      ▼         ┌─────────┐
+┌─────────┐     │ max = a  │
+│ max = b │     └────┬────┘
+└────┬────┘          │
+     ▼               │
+┌─────────────┐      │
+│ 输出 max    │◄─────┘
+└─────┬───────┘
+      ▼
+┌─────────┐
+│  结束    │
+└─────────┘
+```
+
+**③ 伪代码描述**
+```
+BEGIN
+    INPUT a, b
+    IF a >= b THEN
+        max ← a
+    ELSE
+        max ← b
+    END IF
+    OUTPUT max
+END
+```
+
+### 4.3 三种描述方式对比
+
+| 方式 | 优点 | 缺点 |
+|:---:|:---:|:---:|
+| 自然语言 | 易懂，人人会用 | 冗长，易有歧义 |
+| 流程图 | 直观，逻辑清晰 | 画图耗时，复杂算法难表达 |
+| 伪代码 | 简洁，接近程序 | 无统一标准 |
+
+**易错点**
+- 算法必须有穷性（不能无限循环）
+- 自然语言描述要避免歧义
+- 流程图的判断框必须有两个出口
+- 伪代码不是某种特定编程语言
+
+---
+
+## 五、算法 — 枚举法与模拟法
+
+### 5.1 枚举法（穷举法）
+
+**概念**
+- 列举所有可能的情况，逐一验证是否满足条件
+- 适用于解空间有限且不太大的问题
+- 关键：确定枚举范围和判断条件
+
+**代码模板**
+```cpp
+#include <iostream>
+#include <cmath>
+using namespace std;
+
+int main() {
+    // 【例1】找出1-100中所有素数
+    cout << "1-100的素数:" << endl;
+    for (int i = 2; i <= 100; i++) {
+        bool isPrime = true;
+        for (int j = 2; j <= sqrt(i); j++) {
+            if (i % j == 0) {
+                isPrime = false;
+                break;
+            }
         }
-        cout << endl;
-    }
-
-    // 求对角线元素之和
-    int sum1 = 0, sum2 = 0;  // 主对角线、副对角线
-    for (int i = 0; i < 3; i++) {
-        sum1 += a[i][i];
-        sum2 += a[i][2-i];
-    }
-
-    // 矩阵转置
-    int b[4][3];
-    for (int i = 0; i < 3; i++)
-        for (int j = 0; j < 4; j++)
-            b[j][i] = a[i][j];
-
-    // 二维数组传参（列数必须指定）
-    // void func(int a[][4], int rows) { ... }
-    return 0;
-}
-```
-
-**易错点**
-- 二维数组传参时列数必须固定
-- 行优先存储：`a[0][0]`, `a[0][1]`, ..., `a[1][0]`, ...
-- 注意边界判断，防止越界
-
----
-
-### 02. 结构体 struct — 自定义复合类型
-
-**概念**
-- 结构体将不同类型的数据组合成一个整体
-- 用 `struct` 关键字定义，用 `.` 访问成员
-
-**代码模板**
-```cpp
-#include <iostream>
-#include <string>
-#include <algorithm>
-using namespace std;
-
-// 定义结构体
-struct Student {
-    string name;
-    int age;
-    double score;
-};
-
-// 定义时创建变量
-struct Point {
-    int x, y;
-} p1, p2;
-
-// 结构体函数
-void printStudent(const Student& s) {
-    cout << "姓名: " << s.name
-         << ", 年龄: " << s.age
-         << ", 成绩: " << s.score << endl;
-}
-
-// 比较函数（用于排序）
-bool cmpScore(const Student& a, const Student& b) {
-    return a.score > b.score;  // 按成绩降序
-}
-
-int main() {
-    // 创建和初始化
-    Student s1 = {"张三", 15, 95.5};
-    Student s2;
-    s2.name = "李四";
-    s2.age = 14;
-    s2.score = 88.0;
-
-    // 访问成员
-    cout << s1.name << " " << s1.score << endl;
-
-    // 结构体数组
-    Student class1[3] = {
-        {"王五", 16, 92.0},
-        {"赵六", 15, 85.5},
-        {"钱七", 14, 98.0}
-    };
-
-    // 排序
-    sort(class1, class1+3, cmpScore);
-
-    // 输出
-    for (int i = 0; i < 3; i++)
-        printStudent(class1[i]);
-
-    return 0;
-}
-```
-
-**易错点**
-- 结构体定义末尾有分号 `;`
-- 成员访问用 `.`（点运算符）
-- 结构体可以作为函数参数（推荐传 `const` 引用）
-
----
-
-### 03. 结构体指针 — 箭头运算符 ->
-
-**概念**
-- 指向结构体的指针，用 `->` 访问成员
-- 函数传指针可以修改原始结构体
-
-**代码模板**
-```cpp
-#include <iostream>
-using namespace std;
-
-struct Point {
-    int x, y;
-};
-
-// 传指针（可以修改原始值）
-void movePoint(Point* p, int dx, int dy) {
-    p->x += dx;
-    p->y += dy;
-}
-
-// 传引用（更推荐）
-void movePointRef(Point& p, int dx, int dy) {
-    p.x += dx;
-    p.y += dy;
-}
-
-void printPoint(const Point* p) {
-    cout << "(" << p->x << ", " << p->y << ")" << endl;
-}
-
-int main() {
-    Point p = {3, 5};
-
-    // 方式1：指针
-    Point* ptr = &p;
-    movePoint(ptr, 1, 2);
-    printPoint(&p);          // (4, 7)
-
-    // 方式2：引用
-    movePointRef(p, 1, 2);
-    cout << "(" << p.x << ", " << p.y << ")" << endl;  // (5, 9)
-
-    // 动态分配结构体
-    Point* dynamicP = new Point{10, 20};
-    cout << dynamicP->x << ", " << dynamicP->y << endl;
-    delete dynamicP;  // 释放内存
-
-    return 0;
-}
-```
-
-**易错点**
-- `p->x` 等价于 `(*p).x`
-- 指针可能为 `nullptr`，访问前要检查
-- 动态分配的结构体要用 `delete` 释放
-
----
-
-### 04. 结构体数组 — 批量存储同类对象
-
-**概念**
-- 结构体数组用于存储多个相同类型的结构体
-- 常用于处理学生成绩、坐标点等批量数据
-
-**代码模板**
-```cpp
-#include <iostream>
-#include <string>
-#include <algorithm>
-using namespace std;
-
-struct Student {
-    string name;
-    int score;
-};
-
-// 按成绩降序排序
-bool cmp(const Student& a, const Student& b) {
-    return a.score > b.score;
-}
-
-int main() {
-    // 声明结构体数组
-    Student students[5] = {
-        {"张三", 85},
-        {"李四", 92},
-        {"王五", 78},
-        {"赵六", 95},
-        {"钱七", 88}
-    };
-
-    // 计算平均分
-    double avg = 0;
-    for (int i = 0; i < 5; i++)
-        avg += students[i].score;
-    avg /= 5;
-    cout << "平均分: " << avg << endl;
-
-    // 排序
-    sort(students, students+5, cmp);
-
-    // 输出排名
-    for (int i = 0; i < 5; i++) {
-        cout << "第" << i+1 << "名: "
-             << students[i].name
-             << " " << students[i].score << "分" << endl;
-    }
-
-    // 查找最高分
-    int maxIdx = 0;
-    for (int i = 1; i < 5; i++)
-        if (students[i].score > students[maxIdx].score)
-            maxIdx = i;
-    cout << "最高分: " << students[maxIdx].name << endl;
-
-    return 0;
-}
-```
-
-**易错点**
-- 结构体数组的大小在编译时确定
-- 排序需要自定义比较函数
-- 访问成员：`students[i].name`
-
----
-
-## 二、枚举（05–06）
-
-### 05. 枚举 enum — 整型常量集合
-
-**概念**
-- 枚举定义一组命名的整型常量
-- 默认从 0 开始递增
-- 提高代码可读性
-
-**代码模板**
-```cpp
-#include <iostream>
-using namespace std;
-
-// 定义枚举
-enum Direction {
-    UP = 0,     // 显式赋值
-    DOWN = 1,
-    LEFT = 2,
-    RIGHT = 3
-};
-
-// 默认递增
-enum Color {
-    RED,        // 0
-    GREEN,      // 1
-    BLUE        // 2
-};
-
-// 枚举用于 switch
-void printDirection(Direction d) {
-    switch (d) {
-        case UP:    cout << "向上"; break;
-        case DOWN:  cout << "向下"; break;
-        case LEFT:  cout << "向左"; break;
-        case RIGHT: cout << "向右"; break;
-    }
-}
-
-int main() {
-    Direction d = UP;
-    cout << d << endl;  // 0
-
-    // 枚举可以转换为整数
-    int val = GREEN;
-    cout << val << endl;  // 1
-
-    // 用于数组下标
-    int colorCount[3] = {10, 20, 15};
-    cout << colorCount[RED] << endl;   // 10
-    cout << colorCount[BLUE] << endl;  // 15
-
-    return 0;
-}
-```
-
-**易错点**
-- 枚举值是整型常量，不是字符串
-- 不同枚举类型的值可以赋给 `int`（C++ 风格枚举的缺陷）
-- 枚举值默认从 0 开始，可以显式赋值
-
----
-
-### 06. 强类型枚举 — enum class 防命名污染
-
-**概念**
-- `enum class` 是 C++11 引入的强类型枚举
-- 不能隐式转换为 `int`，避免命名冲突
-- 必须用 `枚举类型::枚举值` 访问
-
-**代码模板**
-```cpp
-#include <iostream>
-using namespace std;
-
-// 强类型枚举
-enum class Direction {
-    UP, DOWN, LEFT, RIGHT
-};
-
-enum class Color {
-    RED, GREEN, BLUE
-};
-
-int main() {
-    Direction d = Direction::UP;
-    // int val = d;           // 错误！不能隐式转换
-    int val = static_cast<int>(d);  // 正确：显式转换
-
-    // 不能用整数直接赋值
-    // d = 0;                 // 错误！
-    d = Direction::DOWN;     // 正确
-
-    // 用于 switch
-    switch (d) {
-        case Direction::UP:    cout << "上"; break;
-        case Direction::DOWN:  cout << "下"; break;
-        case Direction::LEFT:  cout << "左"; break;
-        case Direction::RIGHT: cout << "右"; break;
+        if (isPrime) cout << i << " ";
     }
     cout << endl;
-
-    // 不同枚举类型不能比较
-    Color c = Color::RED;
-    // if (d == c) { }        // 错误！类型不同
-
-    // 可以用在类中
-    enum class Season { SPRING, SUMMER, AUTUMN, WINTER };
-    Season s = Season::SPRING;
-
+    
+    // 【例2】百钱买百鸡（公鸡5元，母鸡3元，小鸡1元3只）
+    // 枚举所有组合
+    for (int x = 0; x <= 20; x++) {      // 公鸡数量
+        for (int y = 0; y <= 33; y++) {  // 母鸡数量
+            for (int z = 0; z <= 100; z += 3) { // 小鸡数量（3的倍数）
+                if (x + y + z == 100 && 
+                    5*x + 3*y + z/3 == 100) {
+                    cout << "公鸡:" << x << " 母鸡:" << y 
+                         << " 小鸡:" << z << endl;
+                }
+            }
+        }
+    }
+    
     return 0;
 }
 ```
 
-**普通枚举 vs 强类型枚举**
-| 特性 | `enum` | `enum class` |
+**易错点**
+- 枚举范围要正确，不能遗漏也不能多余
+- 内层循环的终止条件要根据实际情况调整
+- 枚举法时间复杂度可能很高，注意优化（如剪枝）
+
+### 5.2 模拟法
+
+**概念**
+- 按照问题描述的过程，逐步模拟执行
+- 适用于过程明确、规则清晰的问题
+- 关键：准确描述每一步的状态变化
+
+**代码模板**
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+int main() {
+    // 【例1】约瑟夫问题（n个人围成一圈，每数到m的人出列）
+    int n = 7, m = 3;  // 7个人，数到3出列
+    vector<int> people;
+    for (int i = 1; i <= n; i++) people.push_back(i);
+    
+    int pos = 0;  // 当前位置
+    cout << "出列顺序: ";
+    while (!people.empty()) {
+        pos = (pos + m - 1) % people.size();  // 数到m的人
+        cout << people[pos] << " ";
+        people.erase(people.begin() + pos);   // 出列
+    }
+    cout << endl;
+    
+    // 【例2】模拟骰子游戏
+    // 掷骰子模拟
+    int dice[6] = {0};  // 统计每个点数出现次数
+    int throws = 1000;
+    for (int i = 0; i < throws; i++) {
+        int result = (rand() % 6) + 1;  // 1-6
+        dice[result - 1]++;
+    }
+    cout << "掷骰子1000次统计:" << endl;
+    for (int i = 0; i < 6; i++) {
+        cout << "点数" << i+1 << ": " << dice[i] << "次" << endl;
+    }
+    
+    return 0;
+}
+```
+
+**易错点**
+- 模拟时要注意状态更新的顺序
+- 循环终止条件要准确（如数组是否为空）
+- 边界情况要特别注意（如第一轮、最后一轮）
+
+---
+
+## 六、C++ 一维数组基本应用
+
+### 6.1 数组基础
+
+**概念**
+- **数组**：存储相同类型数据的连续内存空间
+- **下标从0开始**，长度为n的数组下标范围 0 到 n-1
+- 数组名代表数组首地址（常量指针）
+
+### 6.2 数组的声明与初始化
+
+```cpp
+#include <iostream>
+using namespace std;
+
+int main() {
+    // 1. 声明与初始化
+    int a[5] = {1, 2, 3, 4, 5};       // 完全初始化
+    int b[5] = {1, 2};                 // 部分初始化，其余为0
+    int c[5] = {0};                    // 全部初始化为0
+    int d[] = {10, 20, 30};            // 自动确定大小为3
+    
+    // 2. 访问与修改
+    cout << a[0] << endl;  // 访问第一个元素: 1
+    a[2] = 100;            // 修改第三个元素
+    
+    // 3. 遍历数组
+    for (int i = 0; i < 5; i++) {
+        cout << a[i] << " ";
+    }
+    cout << endl;
+    
+    // 4. 数组作为函数参数
+    // 注意：传入的是地址，函数内可以修改原数组
+    
+    return 0;
+}
+```
+
+### 6.3 数组常见操作
+
+```cpp
+#include <iostream>
+using namespace std;
+
+// 打印数组
+void printArray(int arr[], int n) {
+    for (int i = 0; i < n; i++) {
+        cout << arr[i] << " ";
+    }
+    cout << endl;
+}
+
+// 求最大值及其下标
+int findMax(int arr[], int n) {
+    int maxIdx = 0;
+    for (int i = 1; i < n; i++) {
+        if (arr[i] > arr[maxIdx]) {
+            maxIdx = i;
+        }
+    }
+    return maxIdx;
+}
+
+// 求平均值
+double average(int arr[], int n) {
+    int sum = 0;
+    for (int i = 0; i < n; i++) {
+        sum += arr[i];
+    }
+    return (double)sum / n;
+}
+
+// 数组逆序
+void reverseArray(int arr[], int n) {
+    for (int i = 0; i < n / 2; i++) {
+        int temp = arr[i];
+        arr[i] = arr[n - 1 - i];
+        arr[n - 1 - i] = temp;
+    }
+}
+
+// 冒泡排序
+void bubbleSort(int arr[], int n) {
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = 0; j < n - 1 - i; j++) {
+            if (arr[j] > arr[j + 1]) {
+                int temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+        }
+    }
+}
+
+int main() {
+    int arr[] = {64, 25, 12, 22, 11};
+    int n = 5;
+    
+    cout << "原始数组: ";
+    printArray(arr, n);
+    
+    cout << "最大值下标: " << findMax(arr, n) << endl;
+    cout << "平均值: " << average(arr, n) << endl;
+    
+    reverseArray(arr, n);
+    cout << "逆序后: ";
+    printArray(arr, n);
+    
+    bubbleSort(arr, n);
+    cout << "排序后: ";
+    printArray(arr, n);
+    
+    return 0;
+}
+```
+
+**易错点**
+- 数组下标越界是最常见的错误！`a[n]` 是无效的（下标从0到n-1）
+- 数组传参时传的是地址，函数内修改会影响原数组
+- 数组大小必须是常量表达式
+- 数组名是常量，不能赋值（不能 `arr = arr2`）
+- 未初始化的数组元素值是随机的（垃圾值）
+
+---
+
+## 七、字符串及其函数
+
+### 7.1 C风格字符串
+
+**概念**
+- C风格字符串是以 `\0`（空字符）结尾的字符数组
+- 字符串长度不包括 `\0`
+- 使用字符数组存储，末尾自动添加 `\0`
+
+```cpp
+#include <iostream>
+#include <cstring>
+using namespace std;
+
+int main() {
+    // 1. 字符串声明方式
+    char s1[] = "Hello";           // 自动添加\0，长度为6
+    char s2[] = {'H','e','l','l','o','\0'};  // 手动添加\0
+    char s3[10] = "Hi";           // 部分初始化，其余为0
+    
+    // 2. 字符串长度
+    cout << "s1长度: " << strlen(s1) << endl;  // 5（不含\0）
+    cout << "s1数组大小: " << sizeof(s1) << endl;  // 6（含\0）
+    
+    // 3. 字符串输入输出
+    char name[50];
+    cout << "请输入姓名: ";
+    cin >> name;  // 遇到空格停止
+    cout << "你好, " << name << endl;
+    
+    // 4. 逐字符访问
+    for (int i = 0; s1[i] != '\0'; i++) {
+        cout << s1[i] << " ";
+    }
+    cout << endl;
+    
+    return 0;
+}
+```
+
+### 7.2 字符串函数
+
+**常用函数一览**
+
+| 函数 | 功能 | 头文件 |
 |:---:|:---:|:---:|
-| 命名空间 | 全局 | 枚举类型内部 |
-| 隐式转换 | 可以转 `int` | 不可以 |
-| 命名冲突 | 可能冲突 | 不会冲突 |
-| 比较 | 不同枚举可比较 | 只能同类型比较 |
+| `strlen(s)` | 返回字符串长度（不含\0） | `&lt;cstring&gt;` |
+| `strcpy(dest, src)` | 复制字符串 | `&lt;cstring&gt;` |
+| `strcat(dest, src)` | 连接字符串 | `&lt;cstring&gt;` |
+| `strcmp(s1, s2)` | 比较字符串（返回0相等，>0前大，<0后大） | `&lt;cstring&gt;` |
 
-**易错点**
-- `enum class` 必须用 `类型::值` 访问
-- 不能隐式转换，需要 `static_cast`
-- 推荐使用 `enum class` 避免命名冲突
-
----
-
-## 三、递归进阶（07–08）
-
-### 07. 递归深入 — 汉诺塔 / 阶乘 / 斐波那契
-
-**概念**
-- 递归是函数调用自身的编程技巧
-- 必须有终止条件，否则无限递归
-
-**代码模板**
 ```cpp
 #include <iostream>
+#include <cstring>
 using namespace std;
 
-// 阶乘
-long long factorial(int n) {
-    if (n <= 1) return 1;
-    return n * factorial(n-1);
-}
-
-// 斐波那契数列
-int fib(int n) {
-    if (n <= 1) return n;
-    return fib(n-1) + fib(n-2);
-}
-
-// 汉诺塔
-void hanoi(int n, char from, char to, char aux) {
-    if (n == 1) {
-        cout << from << " -> " << to << endl;
-        return;
-    }
-    hanoi(n-1, from, aux, to);      // 先把 n-1 个移到辅助柱
-    cout << from << " -> " << to << endl;  // 移动最大盘
-    hanoi(n-1, aux, to, from);      // 把 n-1 个移到目标柱
-}
-
-// 递归求幂
-long long power(long long base, int exp) {
-    if (exp == 0) return 1;
-    if (exp % 2 == 0) {
-        long long half = power(base, exp/2);
-        return half * half;
-    }
-    return base * power(base, exp-1);
-}
-
-// 递归求字符串长度
-int strLen(const char* s) {
-    if (*s == '\0') return 0;
-    return 1 + strLen(s + 1);
-}
-
 int main() {
-    cout << "5! = " << factorial(5) << endl;    // 120
-    cout << "fib(10) = " << fib(10) << endl;    // 55
-    cout << "2^10 = " << power(2, 10) << endl;  // 1024
-
-    cout << "汉诺塔 (3盘):" << endl;
-    hanoi(3, 'A', 'C', 'B');
-
-    cout << "Hello长度: " << strLen("Hello") << endl;  // 5
+    char s1[100] = "Hello";
+    char s2[] = "World";
+    
+    // 1. strlen - 求长度
+    cout << "s1长度: " << strlen(s1) << endl;   // 5
+    cout << "s2长度: " << strlen(s2) << endl;   // 5
+    
+    // 2. strcpy - 复制
+    char dest[50];
+    strcpy(dest, s1);
+    cout << "复制后: " << dest << endl;  // Hello
+    
+    // 3. strcat - 连接
+    strcat(dest, s2);
+    cout << "连接后: " << dest << endl;  // HelloWorld
+    
+    // 4. strcmp - 比较
+    char a[] = "apple";
+    char b[] = "banana";
+    int cmp = strcmp(a, b);
+    if (cmp == 0) cout << "相等" << endl;
+    else if (cmp < 0) cout << a << " < " << b << endl;
+    else cout << a << " > " << b << endl;
+    
+    // 5. 字符串查找
+    char str[] = "Hello World";
+    char* pos = strchr(str, 'W');  // 查找字符
+    if (pos != NULL) {
+        cout << "找到'W'的位置: " << (pos - str) << endl;  // 6
+    }
+    
+    // 6. 子串查找
+    char* sub = strstr(str, "World");  // 查找子串
+    if (sub != NULL) {
+        cout << "找到子串'World'" << endl;
+    }
+    
     return 0;
 }
 ```
 
-**易错点**
-- 递归必须有终止条件
-- 每次递归必须更接近终止条件
-- 斐波那契的朴素递归是 O(2^n)，效率很低
+### 7.3 string类（C++风格）
 
----
-
-### 08. 递归回溯 — 枚举所有可能
-
-**概念**
-- 回溯法通过递归枚举所有可能的解
-- 在发现当前路径不可行时"回退"
-- 常用于排列、组合、子集等问题
-
-**代码模板**
-```cpp
-#include <iostream>
-#include <vector>
-using namespace std;
-
-// 全排列
-vector<vector<int>> result;
-void permute(vector<int>& nums, int start) {
-    if (start == nums.size()) {
-        result.push_back(nums);
-        return;
-    }
-    for (int i = start; i < nums.size(); i++) {
-        swap(nums[start], nums[i]);   // 选择
-        permute(nums, start + 1);     // 递归
-        swap(nums[start], nums[i]);   // 回溯（撤销选择）
-    }
-}
-
-// 子集
-vector<vector<int>> subsets;
-void subsetsHelper(vector<int>& nums, int start, vector<int>& current) {
-    subsets.push_back(current);           // 加入当前子集
-    for (int i = start; i < nums.size(); i++) {
-        current.push_back(nums[i]);       // 选择
-        subsetsHelper(nums, i + 1, current);  // 递归
-        current.pop_back();               // 回溯
-    }
-}
-
-// N 皇后问题（简化版：求解数量）
-int count = 0;
-bool check(int row, int col, vector<int>& queens) {
-    for (int i = 0; i < row; i++) {
-        if (queens[i] == col || abs(queens[i]-col) == abs(i-row))
-            return false;
-    }
-    return true;
-}
-void solveNQueens(int n, int row, vector<int>& queens) {
-    if (row == n) { count++; return; }
-    for (int col = 0; col < n; col++) {
-        if (check(row, col, queens)) {
-            queens[row] = col;
-            solveNQueens(n, row + 1, queens);
-        }
-    }
-}
-
-int main() {
-    // 全排列
-    vector<int> nums = {1, 2, 3};
-    permute(nums, 0);
-    for (auto& p : result) {
-        for (int x : p) cout << x << " ";
-        cout << endl;
-    }
-
-    // 子集
-    vector<int> current;
-    vector<int> nums2 = {1, 2, 3};
-    subsetsHelper(nums2, 0, current);
-    for (auto& s : subsets) {
-        cout << "{ ";
-        for (int x : s) cout << x << " ";
-        cout << "}" << endl;
-    }
-
-    // 4皇后
-    vector<int> queens(4);
-    solveNQueens(4, 0, queens);
-    cout << "4皇后解数: " << count << endl;  // 2
-
-    return 0;
-}
-```
-
-**回溯框架**
-```
-void backtrack(当前状态) {
-    if (满足结束条件) {
-        记录解;
-        return;
-    }
-    for (每个选择) {
-        做出选择;
-        backtrack(新状态);  // 递归
-        撤销选择;          // 回溯
-    }
-}
-```
-
-**易错点**
-- 回溯的关键是"选择-递归-撤销"
-- 不要忘记回溯（撤销选择）
-- 剪枝可以大幅提高效率
-
----
-
-## 四、文件操作（09–11）
-
-### 09. 文件打开 ifstream — 读模式默认
-
-**概念**
-- `ifstream` 用于从文件读取数据
-- 默认以读模式打开
-
-**代码模板**
-```cpp
-#include <iostream>
-#include <fstream>
-#include <string>
-using namespace std;
-
-int main() {
-    // 打开文件
-    ifstream fin("input.txt");
-
-    // 检查是否成功打开
-    if (!fin.is_open()) {
-        cout << "无法打开文件" << endl;
-        return 1;
-    }
-
-    // 读取数据
-    int n;
-    fin >> n;  // 读入一个整数
-
-    string line;
-    while (getline(fin, line)) {  // 按行读取
-        cout << line << endl;
-    }
-
-    // 读取到数组
-    int arr[100], cnt = 0;
-    while (fin >> arr[cnt]) cnt++;
-
-    // 关闭文件（ifstream 析构时自动关闭）
-    fin.close();
-    return 0;
-}
-```
-
-**易错点**
-- 打开后要检查 `is_open()`
-- `>>` 遇空格/换行停止，`getline` 按行读取
-- 文件路径在 Windows 用 `\\` 或 `/`
-
----
-
-### 10. 文件打开 ofstream — 写模式默认清空
-
-**概念**
-- `ofstream` 用于向文件写入数据
-- 默认写模式会**清空**原文件内容
-
-**代码模板**
-```cpp
-#include <iostream>
-#include <fstream>
-using namespace std;
-
-int main() {
-    // 写入文件（默认清空）
-    ofstream fout("output.txt");
-
-    if (!fout.is_open()) {
-        cout << "无法创建文件" << endl;
-        return 1;
-    }
-
-    // 写入数据
-    fout << "Hello, World!" << endl;
-    fout << 42 << " " << 3.14 << endl;
-
-    // 写入数组
-    int arr[] = {1, 2, 3, 4, 5};
-    for (int i = 0; i < 5; i++)
-        fout << arr[i] << " ";
-
-    fout.close();
-
-    // 追加模式（不清空）
-    ofstream fout2("output.txt", ios::app);
-    fout2 << "\n追加的内容" << endl;
-    fout2.close();
-
-    return 0;
-}
-```
-
-**打开模式**
-| 模式 | 含义 |
-|:---:|:---|
-| `ios::out` | 写模式（默认，清空） |
-| `ios::app` | 追加模式 |
-| `ios::trunc` | 截断（清空） |
-| `ios::in` | 读模式 |
-
-**易错点**
-- `ofstream` 默认会清空文件
-- 追加要用 `ios::app`
-- 写入后记得 `close()`
-
----
-
-### 11. fstream 双工 — 可读可写
-
-**概念**
-- `fstream` 既可以读又可以写
-- 需要指定打开模式
-
-**代码模板**
-```cpp
-#include <iostream>
-#include <fstream>
-#include <string>
-using namespace std;
-
-int main() {
-    // 读写模式
-    fstream fs("data.txt", ios::in | ios::out);
-
-    if (!fs.is_open()) {
-        // 文件不存在则创建
-        fs.open("data.txt", ios::in | ios::out | ios::trunc);
-    }
-
-    // 写入数据
-    fs << "Alice 95" << endl;
-    fs << "Bob 87" << endl;
-
-    // 回到文件开头
-    fs.seekg(0, ios::beg);
-
-    // 读取数据
-    string name;
-    int score;
-    while (fs >> name >> score) {
-        cout << name << ": " << score << endl;
-    }
-
-    fs.close();
-
-    // 修改文件中的特定内容
-    fstream fs2("data.txt", ios::in | ios::out);
-    fs2.seekp(0);  // 移动写指针到开头
-    fs2 << "Charlie 92";  // 覆盖前几个字符
-    fs2.close();
-
-    return 0;
-}
-```
-
-**易错点**
-- `fstream` 需要指定 `ios::in | ios::out`
-- `seekg` 移动读指针，`seekp` 移动写指针
-- 同时读写时注意指针位置
-
----
-
-## 五、字符串流与getline（12–13）
-
-### 12. getline 读行 — 按行读取
-
-**概念**
-- `getline(cin, line)` 从标准输入读取一行
-- `getline(fin, line)` 从文件读取一行
-- 可以指定分隔符
-
-**代码模板**
 ```cpp
 #include <iostream>
 #include <string>
-#include <fstream>
 using namespace std;
 
 int main() {
-    // 从 cin 读取一行
-    string line;
-    cout << "请输入一行: ";
-    getline(cin, line);
-    cout << "你输入了: " << line << endl;
-
-    // 读取整段文本
-    string paragraph;
-    cout << "输入多行（输入 end 结束）:" << endl;
-    while (getline(cin, line) && line != "end") {
-        paragraph += line + "\n";
+    // 1. string声明与初始化
+    string s1 = "Hello";
+    string s2("World");
+    string s3(5, 'A');  // "AAAAA"
+    
+    // 2. 长度
+    cout << "s1长度: " << s1.length() << endl;  // 5
+    cout << "s1长度: " << s1.size() << endl;    // 5（等价）
+    
+    // 3. 拼接
+    string s4 = s1 + " " + s2;
+    cout << s4 << endl;  // Hello World
+    
+    // 4. 比较
+    if (s1 == s2) cout << "相等" << endl;
+    if (s1 < s2) cout << s1 << " < " << s2 << endl;
+    
+    // 5. 访问字符
+    cout << s1[0] << endl;       // H
+    cout << s1.at(1) << endl;    // e（带边界检查）
+    
+    // 6. 字符串查找
+    string str = "Hello World";
+    size_t pos = str.find("World");
+    if (pos != string::npos) {
+        cout << "找到位置: " << pos << endl;  // 6
     }
-
-    // 从文件逐行读取
-    ifstream fin("input.txt");
-    while (getline(fin, line)) {
-        cout << line << endl;
-    }
-    fin.close();
-
-    // 指定分隔符
-    string data = "one,two,three";
-    string token;
-    // 手动分割（不用 getline）
-    // 或者用 stringstream
-
-    // 处理含空格的输入
-    string fullLine;
-    getline(cin, fullLine);  // 读入 "Hello World"
-    cout << fullLine << endl;
-
+    
+    // 7. 子串
+    string sub = str.substr(6, 5);  // 从位置6开始取5个字符
+    cout << "子串: " << sub << endl;  // World
+    
+    // 8. 插入和删除
+    string s5 = "Hello";
+    s5.insert(2, "!!");  // He!!llo
+    cout << "插入后: " << s5 << endl;
+    s5.erase(2, 2);      // Hello
+    cout << "删除后: " << s5 << endl;
+    
+    // 9. 字符串转数字
+    string numStr = "12345";
+    int num = stoi(numStr);
+    cout << "转换后: " << num << endl;
+    
+    // 10. 数字转字符串
+    string numStr2 = to_string(67890);
+    cout << "转换后: " << numStr2 << endl;
+    
     return 0;
 }
 ```
 
-**易错点**
-- `getline` 会丢弃换行符
-- `cin >> x` 后再 `getline` 会读到残留的换行符，需要 `cin.ignore()`
-- `getline` 的第三个参数可自定义分隔符
+### 7.4 字符处理函数
 
----
-
-### 13. 字符串流 sstream — 分割 / 类型转换
-
-**概念**
-- `stringstream` 用于字符串和数值之间的转换
-- 可以像流一样操作字符串
-
-**代码模板**
 ```cpp
 #include <iostream>
-#include <sstream>
-#include <string>
-#include <vector>
+#include <cctype>
 using namespace std;
 
 int main() {
-    // 字符串分割
-    string csv = "apple,banana,cherry";
-    stringstream ss(csv);
-    string token;
-    while (getline(ss, token, ',')) {
-        cout << token << endl;
-    }
-
-    // 数字转字符串
-    stringstream converter;
-    converter << 42;
-    string numStr = converter.str();
-    cout << "数字: " << numStr << endl;
-
-    // 字符串转数字
-    string str = "12345";
-    stringstream ss2(str);
-    int num;
-    ss2 >> num;
-    cout << "数值: " << num << endl;
-
-    // 更简单的方式
-    string s1 = to_string(123);      // 数字转字符串
-    int n = stoi("456");             // 字符串转整数
-    double d = stod("3.14");         // 字符串转浮点数
-
-    // 按空格分割字符串
-    string sentence = "Hello World from C++";
-    stringstream ss3(sentence);
-    string word;
-    vector<string> words;
-    while (ss3 >> word) {
-        words.push_back(word);
-    }
-    for (auto& w : words) cout << w << endl;
-
-    // 拼接字符串
-    stringstream ss4;
-    ss4 << "Score: " << 95 << ", Name: " << "Alice";
-    string result = ss4.str();
-    cout << result << endl;
-
-    return 0;
-}
-```
-
-**常用函数**
-| 函数 | 功能 |
-|:---|:---|
-| `str()` | 获取/设置字符串内容 |
-| `clear()` | 清除错误标志 |
-| `seekg(0)` | 重置读指针 |
-| `>>` | 从流中提取数据 |
-| `<<` | 向流中插入数据 |
-
-**易错点**
-- 用 `str()` 获取最终字符串
-- 用完后要 `clear()` 或重新创建对象
-- `getline(ss, token, ',')` 可自定义分隔符
-
----
-
-## 六、STL 算法（14–16）
-
-### 14. 常用算法 — sort / swap / reverse / min / max
-
-**概念**
-- `&lt;algorithm&gt;` 头文件提供大量通用算法
-- 这些算法可以用于数组、vector 等容器
-
-**代码模板**
-```cpp
-#include <iostream>
-#include <algorithm>
-#include <vector>
-using namespace std;
-
-int main() {
-    int a[] = {5, 3, 1, 4, 2};
-
-    // sort：排序
-    sort(a, a+5);                    // 升序
-    sort(a, a+5, greater<int>());    // 降序
-
-    // swap：交换
-    int x = 10, y = 20;
-    swap(x, y);
-
-    // reverse：反转
-    int b[] = {1, 2, 3, 4, 5};
-    reverse(b, b+5);                 // {5, 4, 3, 2, 1}
-
-    // min / max：最小最大值
-    cout << min(3, 5) << endl;       // 3
-    cout << max(3, 5) << endl;       // 5
-
-    // min_element / max_element
-    int c[] = {3, 1, 4, 1, 5, 9};
-    int minVal = *min_element(c, c+6);
-    int maxVal = *max_element(c, c+6);
-
-    // find：查找
-    int* pos = find(a, a+5, 4);
-    if (pos != a+5) cout << "找到: " << pos - a << endl;
-
-    // count：计数
-    int cnt = count(a, a+5, 4);
-
-    // fill：填充
-    int d[5];
-    fill(d, d+5, 0);
-
-    // 用于 vector
-    vector<int> v = {5, 3, 1, 4, 2};
-    sort(v.begin(), v.end());
-    reverse(v.begin(), v.end());
-
-    return 0;
-}
-```
-
-**常用算法速查**
-| 算法 | 功能 | 用法 |
-|:---|:---|:---|
-| `sort` | 排序 | `sort(a, a+n)` |
-| `swap` | 交换 | `swap(a, b)` |
-| `reverse` | 反转 | `reverse(a, a+n)` |
-| `min` / `max` | 最小/大值 | `min(a, b)` |
-| `find` | 查找 | `find(a, a+n, val)` |
-| `count` | 计数 | `count(a, a+n, val)` |
-| `fill` | 填充 | `fill(a, a+n, val)` |
-
-**易错点**
-- `sort` 默认升序，降序用 `greater<int>()`
-- `min_element` 返回迭代器/指针，要用 `*` 取值
-- 这些算法都在 `&lt;algorithm&gt;` 中
-
----
-
-### 15. lower_bound — 有序区间二分下界
-
-**概念**
-- 在**有序**区间中查找第一个**不小于** `val` 的位置
-- 时间复杂度 O(log n)
-
-**代码模板**
-```cpp
-#include <iostream>
-#include <algorithm>
-#include <vector>
-using namespace std;
-
-int main() {
-    int a[] = {1, 2, 3, 4, 5, 6};
-
-    // lower_bound：第一个 >= val 的位置
-    auto it = lower_bound(a, a+6, 4);
-    int pos = it - a;  // 3（下标）
-    cout << "第一个 >= 4 的位置: " << pos << endl;
-
-    // 在 vector 中使用
-    vector<int> v = {10, 20, 30, 40, 50};
-    auto vit = lower_bound(v.begin(), v.end(), 25);
-    cout << "第一个 >= 25 的位置: " << vit - v.begin() << endl;  // 2
-
-    // 计算 val 出现的次数
-    int b[] = {1, 2, 2, 2, 3, 4};
-    int cnt = lower_bound(b, b+6, 3) - lower_bound(b, b+6, 2);
-    cout << "2 出现了 " << cnt << " 次" << endl;  // 3
-
-    // 判断 val 是否存在
-    bool exists = (lower_bound(a, a+6, 4) != a+6) && (*lower_bound(a, a+6, 4) == 4);
-
+    char ch = 'A';
+    
+    // 判断函数
+    cout << "是否字母: " << isalpha(ch) << endl;   // 非0
+    cout << "是否数字: " << isdigit(ch) << endl;   // 0
+    cout << "是否大写: " << isupper(ch) << endl;   // 非0
+    cout << "是否小写: " << islower(ch) << endl;   // 0
+    
+    // 转换函数
+    cout << "转小写: " << (char)tolower(ch) << endl;  // a
+    cout << "转大写: " << (char)toupper('b') << endl;  // B
+    
+    // ASCII码
+    cout << "'A'的ASCII: " << (int)'A' << endl;   // 65
+    cout << "'a'的ASCII: " << (int)'a' << endl;   // 97
+    cout << "'0'的ASCII: " << (int)'0' << endl;   // 48
+    
     return 0;
 }
 ```
 
 **易错点**
-- 要求数组**有序**
-- 返回的是迭代器/指针，需 `- begin()` 转下标
-- `lower_bound` 返回第一个 `>=` 的位置
+- C风格字符串必须以 `\0` 结尾，否则会越界
+- `strlen` 返回长度不含 `\0`，`sizeof` 返回数组总大小（含 `\0`）
+- `strcpy` 和 `strcat` 要确保目标数组足够大
+- `strcmp` 是按字典序比较，不是比较长度
+- `string` 类对象可以直接用 `+` 拼接，`char` 数组不行
+- `string::npos` 表示未找到，不是 -1
 
 ---
 
-### 16. upper_bound — 有序区间二分上界
+## 附录：常用头文件速查
 
-**概念**
-- 在**有序**区间中查找第一个**大于** `val` 的位置
-- 时间复杂度 O(log n)
-
-**代码模板**
-```cpp
-#include <iostream>
-#include <algorithm>
-#include <vector>
-using namespace std;
-
-int main() {
-    int a[] = {1, 2, 3, 3, 3, 4, 5};
-
-    // upper_bound：第一个 > val 的位置
-    auto it = upper_bound(a, a+7, 3);
-    int pos = it - a;  // 5
-    cout << "第一个 > 3 的位置: " << pos << endl;
-
-    // lower_bound 和 upper_bound 的区别
-    int lo = lower_bound(a, a+7, 3) - a;  // 第一个 >= 3 的位置: 2
-    int hi = upper_bound(a, a+7, 3) - a;  // 第一个 > 3 的位置: 5
-    cout << "3 出现在 [" << lo << ", " << hi << ")" << endl;
-
-    // 计数：val 出现的次数
-    int cnt = upper_bound(a, a+7, 3) - lower_bound(a, a+7, 3);
-    cout << "3 出现了 " << cnt << " 次" << endl;  // 3
-
-    // 在 vector 中使用
-    vector<int> v = {10, 20, 30, 40, 50};
-    auto vit = upper_bound(v.begin(), v.end(), 30);
-    cout << "第一个 > 30 的位置: " << vit - v.begin() << endl;  // 3
-
-    return 0;
-}
-```
-
-**lower_bound vs upper_bound**
-| 函数 | 含义 | 查找条件 |
-|:---|:---|:---|
-| `lower_bound` | 第一个不小于 val 的位置 | `>= val` |
-| `upper_bound` | 第一个大于 val 的位置 | `> val` |
-| 计数 | `upper - lower` | `val` 出现次数 |
-
-**易错点**
-- 要求数组**有序**
-- `lower_bound` 返回 `>= val`，`upper_bound` 返回 `> val`
-- 计数用 `upper - lower`
+| 头文件 | 用途 |
+|:---:|:---:|
+| `&lt;iostream&gt;` | 输入输出流（cin, cout） |
+| `&lt;cstring&gt;` | C风格字符串函数（strlen, strcpy等） |
+| `&lt;string&gt;` | C++ string类 |
+| `&lt;cmath&gt;` | 数学函数（sqrt, abs等） |
+| `&lt;algorithm&gt;` | 算法（swap, sort等） |
+| `<cctype>` | 字符处理（isalpha, isdigit等） |
+| `&lt;cstdlib&gt;` | 通用工具（rand, srand等） |
 
 ---
 
-## 七、预处理与模块化（17–20）
+## 附录：三级考点速查表
 
-### 17. 宏定义 #define — 文本替换，无类型检查
-
-**概念**
-- `#define` 是预处理指令，进行简单的文本替换
-- 没有类型检查，容易出错
-- 推荐用 `const` 和 `inline` 替代
-
-**代码模板**
-```cpp
-#include <iostream>
-using namespace std;
-
-// 简单宏
-#define PI 3.14159
-#define MAX_N 100
-
-// 带参数的宏（容易出错）
-#define SQUARE(x) ((x) * (x))      // 注意括号！
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-
-// 错误写法（没有括号）
-#define BAD_SQUARE(x) x * x        // BAD_SQUARE(3+1) = 7，不是 16
-
-// 更好的替代：const 和 inline
-const double PI_CONST = 3.14159;
-inline double square(double x) { return x * x; }
-
-int main() {
-    cout << PI << endl;
-    cout << SQUARE(3) << endl;      // 9
-    cout << SQUARE(3+1) << endl;    // 16（正确）
-    // cout << BAD_SQUARE(3+1) << endl;  // 7（错误！）
-
-    // 条件编译调试
-    #define DEBUG
-    #ifdef DEBUG
-        cout << "调试信息" << endl;
-    #endif
-
-    return 0;
-}
-```
-
-**易错点**
-- 宏只是文本替换，没有类型检查
-- 带参数的宏每个参数都要加括号
-- 推荐用 `const` 代替简单宏，用 `inline` 代替函数宏
+| 知识块 | 考点 | 难度 |
+|:---:|:---:|:---:|
+| 数据编码 | 原码、反码、补码概念与转换 | ★★☆ |
+| 进制转换 | 二进制、八进制、十进制、十六进制互转 | ★★☆ |
+| 位运算 | 与、或、非、异或、左移、右移 | ★★★ |
+| 算法描述 | 自然语言、流程图、伪代码 | ★☆☆ |
+| 枚举法与模拟法 | 穷举所有可能、模拟过程 | ★★☆ |
+| 一维数组 | 声明、初始化、遍历、基本操作 | ★★☆ |
+| 字符串 | C风格字符串、string类、常用函数 | ★★★ |
 
 ---
 
-### 18. 条件编译 — #ifdef / #ifndef / #pragma once
-
-**概念**
-- 条件编译根据条件决定是否编译某段代码
-- 常用于防止头文件重复包含
-
-**代码模板**
-```cpp
-// 头文件保护（方式1：传统）
-#ifndef MY_HEADER_H
-#define MY_HEADER_H
-
-// 头文件内容
-void func();
-int add(int a, int b);
-
-#endif
-
-// 头文件保护（方式2：C++11）
-#pragma once
-
-// 头文件内容
-void func2();
-
-// 条件编译
-#define PLATFORM_WINDOWS
-
-int main() {
-    // 根据平台选择代码
-    #ifdef PLATFORM_WINDOWS
-        cout << "Windows 平台" << endl;
-    #elif defined(PLATFORM_LINUX)
-        cout << "Linux 平台" << endl;
-    #else
-        cout << "未知平台" << endl;
-    #endif
-
-    // 调试代码（发布时关闭）
-    #ifdef DEBUG
-        cout << "调试模式" << endl;
-    #endif
-
-    return 0;
-}
-```
-
-**条件编译指令**
-| 指令 | 功能 |
-|:---|:---|
-| `#ifdef MACRO` | 如果定义了 MACRO |
-| `#ifndef MACRO` | 如果未定义 MACRO |
-| `#if expr` | 如果 expr 为真 |
-| `#elif` | 否则如果 |
-| `#else` | 否则 |
-| `#endif` | 结束条件编译 |
-
-**易错点**
-- `#ifndef` 用于防止头文件重复包含
-- `#pragma once` 更简洁但非标准（所有主流编译器都支持）
-- 条件编译在预处理阶段处理
-
----
-
-### 19. 头文件组织 — 声明放 .h、定义放 .cpp
-
-**概念**
-- 头文件（.h）放声明，源文件（.cpp）放定义
-- 避免重复定义，提高编译效率
-
-**代码模板**
-```cpp
-// ====== math_utils.h ======
-#ifndef MATH_UTILS_H
-#define MATH_UTILS_H
-
-// 函数声明
-int add(int a, int b);
-int multiply(int a, int b);
-double average(int a, int b);
-
-// 结构体定义
-struct Point {
-    double x, y;
-};
-
-// 常量定义（const 在头文件中安全）
-const double PI = 3.14159;
-
-#endif
-
-// ====== math_utils.cpp ======
-#include "math_utils.h"
-
-// 函数定义
-int add(int a, int b) {
-    return a + b;
-}
-
-int multiply(int a, int b) {
-    return a * b;
-}
-
-double average(int a, int b) {
-    return (a + b) / 2.0;
-}
-
-// ====== main.cpp ======
-#include <iostream>
-#include "math_utils.h"
-using namespace std;
-
-int main() {
-    cout << add(3, 5) << endl;
-    Point p = {1.0, 2.0};
-    return 0;
-}
-```
-
-**易错点**
-- 头文件要加保护（`#ifndef` 或 `#pragma once`）
-- `const` 变量可以定义在头文件中（默认内部链接）
-- `#define` 常量不适合放在头文件中
-
----
-
-### 20. 命名空间进阶 — using 声明、命名别名
-
-**概念**
-- `using` 声明引入特定名称，避免全写 `std::`
-- 命名空间别名简化长名称
-
-**代码模板**
-```cpp
-#include <iostream>
-#include <string>
-#include <vector>
-#include <algorithm>
-using namespace std;
-
-// 命名空间别名
-namespace very_long_namespace_name {
-    void func() { cout << "hello" << endl; }
-}
-
-namespace short = very_long_namespace_name;  // 别名
-
-// 自定义命名空间
-namespace Math {
-    const double PI = 3.14159;
-
-    double circleArea(double r) {
-        return PI * r * r;
-    }
-
-    namespace Advanced {
-        double gaussian(double x, double mu, double sigma) {
-            return exp(-0.5 * pow((x - mu) / sigma, 2));
-        }
-    }
-}
-
-// using 声明（推荐方式）
-using std::cout;
-using std::endl;
-using std::string;
-
-int main() {
-    // 使用别名
-    short::func();
-
-    // 使用嵌套命名空间
-    cout << Math::PI << endl;
-    cout << Math::circleArea(5.0) << endl;
-    cout << Math::Advanced::gaussian(0, 0, 1) << endl;
-
-    // using 声明的效果
-    cout << "Hello" << endl;  // 不用写 std::
-    string s = "World";
-    cout << s << endl;
-
-    // using 指令（不推荐在头文件中使用）
-    // using namespace std;  // 可能引起命名冲突
-
-    return 0;
-}
-```
-
-**using 的三种方式**
-```cpp
-// 方式1：using 指令（引入整个命名空间）
-using namespace std;      // 不推荐在头文件中
-
-// 方式2：using 声明（引入特定名称）
-using std::cout;          // 推荐
-using std::endl;
-
-// 方式3：命名空间别名
-namespace fs = std::filesystem;  // C++17
-```
-
-**易错点**
-- 不要在头文件中使用 `using namespace std;`
-- `using` 声明比 `using namespace` 更安全
-- 命名空间可以嵌套
-
----
-
-## 附录：GESP L3 考点速查表
-
-| 编号 | 考点 | 关键词 |
-|:---:|:---|:---|
-| 01 | 二维数组 | 矩阵、网格存储 |
-| 02 | 结构体 struct | 自定义复合类型 |
-| 03 | 结构体指针 | 箭头运算符 -> |
-| 04 | 结构体数组 | 批量存储同类对象 |
-| 05 | 枚举 enum | 整型常量集合 |
-| 06 | 强类型枚举 | enum class 防污染 |
-| 07 | 递归深入 | 汉诺塔/阶乘/斐波那契 |
-| 08 | 递归回溯 | 枚举所有可能 |
-| 09 | 文件打开 ifstream | 读模式默认 |
-| 10 | 文件打开 ofstream | 写模式默认清空 |
-| 11 | fstream 双工 | 可读可写 |
-| 12 | getline 读行 | 按行读取 |
-| 13 | 字符串流 sstream | 分割/类型转换 |
-| 14 | 常用算法 | sort/swap/reverse/min/max |
-| 15 | lower_bound | 有序二分下界 |
-| 16 | upper_bound | 有序二分上界 |
-| 17 | 宏定义 #define | 文本替换、无类型检查 |
-| 18 | 条件编译 | #ifdef/#ifndef/#pragma once |
-| 19 | 头文件组织 | 声明.h、定义.cpp |
-| 20 | 命名空间进阶 | using 声明、别名 |
-
----
-
+> 本文档根据 GESP Level 3 考试大纲编写，仅包含三级考点内容
+> 
+> 更新时间：2026年6月19日

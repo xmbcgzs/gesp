@@ -1,773 +1,542 @@
-# GESP C++ 七级（L7 拔高）知识点整理
+# GESP Level 7 知识点整理（修正版）
 
-> 共 25 个考点，涵盖高级图论、高级数据结构、高级DP、字符串算法等
-
----
-
-## 一、强连通分量与缩点（01–03）
-
-### 01. 强连通分量 Tarjan — dfn/low + 栈
-
-**概念**
-- 有向图中，任意两点互相可达的极大子图称为强连通分量（SCC）
-- Tarjan 算法用一次 DFS 求所有 SCC，O(V+E)
-
-**代码模板**
-```cpp
-#include <iostream>
-#include <vector>
-#include <stack>
-using namespace std;
-
-const int N = 10005;
-vector<int> g[N];
-int dfn[N], low[N], timer;
-int scc[N], sccCnt;
-bool inStack[N];
-stack<int> st;
-
-void tarjan(int u) {
-    dfn[u] = low[u] = ++timer;
-    st.push(u); inStack[u] = true;
-    for (int v : g[u]) {
-        if (!dfn[v]) {
-            tarjan(v);
-            low[u] = min(low[u], low[v]);
-        } else if (inStack[v]) {
-            low[u] = min(low[u], dfn[v]);
-        }
-    }
-    if (dfn[u] == low[u]) {
-        sccCnt++;
-        while (true) {
-            int x = st.top(); st.pop();
-            inStack[x] = false;
-            scc[x] = sccCnt;
-            if (x == u) break;
-        }
-    }
-}
-
-int main() {
-    int n, m;
-    cin >> n >> m;
-    for (int i = 0; i < m; i++) {
-        int u, v; cin >> u >> v;
-        g[u].push_back(v);
-    }
-    for (int i = 1; i <= n; i++)
-        if (!dfn[i]) tarjan(i);
-    cout << "SCC数量: " << sccCnt << endl;
-    return 0;
-}
-```
-
-**易错点**
-- `dfn` 是 DFS 序，`low` 是能回溯到的最早 DFS 序
-- `dfn[u] == low[u]` 说明 u 是 SCC 的根
-- 注意 `inStack` 标记，只有栈中的节点才能更新 `low`
+> **说明**：本文档严格依据 GESP 七级考试大纲编写，涵盖四大知识板块。  
+> **修订日期**：2026-06-19  
+> **主要修订**：移除了原版中不属于 GESP 大纲的高级竞赛内容（如 Tarjan SCC、LCA、线段树、KMP、Trie 等），确保内容与官方大纲完全一致。
 
 ---
 
-### 02. Kosaraju — 正反两次 DFS
+## 一、数学库常用函数
 
-**概念**
-- 第一次 DFS 求逆后序，第二次在反图上按逆序 DFS
-- 比 Tarjan 更容易理解
+### 1.1 三角函数
 
-**代码模板**
-```cpp
-#include <iostream>
-#include <vector>
-#include <algorithm>
-using namespace std;
+| 函数 | 功能 | 头文件 | 示例 |
+|------|------|--------|------|
+| `sin(x)` | 正弦函数，x 为弧度 | `&lt;cmath&gt;` | `sin(3.14159/2)` → `1.0` |
+| `cos(x)` | 余弦函数，x 为弧度 | `&lt;cmath&gt;` | `cos(0)` → `1.0` |
 
-const int N = 10005;
-vector<int> g[N], rg[N];
-bool vis[N];
-int order[N], cnt;
-int scc[N], sccCnt;
+**要点：**
+- 参数单位为**弧度**，不是角度。角度转弧度公式：`弧度 = 角度 × π / 180`
+- `M_PI` 可表示 π（需定义 `_USE_MATH_DEFINES`）
+- `tan(x)` = `sin(x) / cos(x)`，也是常用三角函数
 
-void dfs1(int u) {
-    vis[u] = true;
-    for (int v : g[u])
-        if (!vis[v]) dfs1(v);
-    order[++cnt] = u;  // 逆后序
-}
+### 1.2 对数函数
 
-void dfs2(int u) {
-    vis[u] = true;
-    scc[u] = sccCnt;
-    for (int v : rg[u])
-        if (!vis[v]) dfs2(v);
-}
+| 函数 | 功能 | 头文件 | 示例 |
+|------|------|--------|------|
+| `log10(x)` | 以 10 为底的对数 | `&lt;cmath&gt;` | `log10(100)` → `2.0` |
+| `log2(x)` | 以 2 为底的对数 | `&lt;cmath&gt;` | `log2(8)` → `3.0` |
+| `log(x)` | 自然对数（以 e 为底） | `&lt;cmath&gt;` | `log(1)` → `0.0` |
 
-int main() {
-    int n, m;
-    cin >> n >> m;
-    for (int i = 0; i < m; i++) {
-        int u, v; cin >> u >> v;
-        g[u].push_back(v);
-        rg[v].push_back(u);  // 反图
-    }
-    for (int i = 1; i <= n; i++)
-        if (!vis[i]) dfs1(i);
-    fill(vis, vis+n+1, false);
-    for (int i = n; i >= 1; i--)
-        if (!vis[order[i]]) { sccCnt++; dfs2(order[i]); }
-    return 0;
-}
-```
+**要点：**
+- 对数函数的参数必须为**正数**
+- 换底公式：`log_a(b) = log(b) / log(a)`，可用于计算任意底数的对数
+- 常用于计算一个数的位数：`位数 = (int)log10(n) + 1`
+
+### 1.3 指数函数
+
+| 函数 | 功能 | 头文件 | 示例 |
+|------|------|--------|------|
+| `exp(x)` | 计算 e^x | `&lt;cmath&gt;` | `exp(0)` → `1.0` |
+| `pow(base, exp)` | 计算 base^exp | `&lt;cmath&gt;` | `pow(2, 10)` → `1024.0` |
+| `sqrt(x)` | 计算 √x | `&lt;cmath&gt;` | `sqrt(9)` → `3.0` |
+
+**要点：**
+- `exp(x)` 与 `log(x)` 互为反函数
+- `pow(a, b)` 计算 a 的 b 次幂，结果为 `double` 类型
+- 注意整数幂的精度问题：大整数次幂可能溢出
 
 ---
 
-### 03. 缩点 — SCC 缩成 DAG
+## 二、复杂动态规划
 
-**概念**
-- 将每个 SCC 缩成一个点，得到有向无环图（DAG）
-- 可以在缩点后的 DAG 上做 DP
+### 2.1 二维动态规划
 
-**代码模板**
+**概念：** 当状态需要两个（或多个）维度来描述时，需要使用二维（或多维）DP 数组。
+
+**典型例题：数字三角形**
+
 ```cpp
-// 缩点（基于 Tarjan）
-vector<int> ng[N];  // 缩点后的图
-int val[N], sVal[N];  // 原点权值，缩点后权值
-
-// 缩点后求最长路（DAG DP）
-int dp[N];
-int solve(int n) {
-    int ans = 0;
-    for (int i = sccCnt; i >= 1; i--) {
-        dp[i] = sVal[i];
-        for (int v : ng[i])
-            dp[i] = max(dp[i], dp[v] + sVal[i]);
-        ans = max(ans, dp[i]);
-    }
-    return ans;
-}
-```
-
-**易错点**
-- 缩点后是 DAG，可以拓扑排序
-- 缩点后要注意边的方向
-- 求 SCC 内部的权值之和
-
----
-
-## 二、LCA 最近公共祖先（04–05, 07）
-
-### 04. LCA 倍增 — fa[k][v] 父亲表
-
-**概念**
-- 预处理每个节点的 2^k 级祖先
-- 查询 LCA 时先对齐深度，再一起跳
-
-**代码模板**
-```cpp
-#include <iostream>
-#include <vector>
-#include <cmath>
-using namespace std;
-
-const int N = 100005, LOG = 17;
-vector<int> g[N];
-int fa[LOG][N], dep[N];
-
-void dfs(int u, int p) {
-    fa[0][u] = p;
-    for (int i = 1; i < LOG; i++)
-        fa[i][u] = fa[i-1][fa[i-1][u]];
-    for (int v : g[u])
-        if (v != p) { dep[v] = dep[u]+1; dfs(v, u); }
-}
-
-int lca(int u, int v) {
-    if (dep[u] < dep[v]) swap(u, v);
-    for (int i = LOG-1; i >= 0; i--)
-        if (dep[fa[i][u]] >= dep[v]) u = fa[i][u];
-    if (u == v) return u;
-    for (int i = LOG-1; i >= 0; i--)
-        if (fa[i][u] != fa[i][v]) { u = fa[i][u]; v = fa[i][v]; }
-    return fa[0][u];
-}
-
-int main() {
-    int n, q;
-    cin >> n >> q;
-    for (int i = 1; i < n; i++) {
-        int u, v; cin >> u >> v;
-        g[u].push_back(v); g[v].push_back(u);
-    }
-    dep[1] = 1; dfs(1, 0);
-    while (q--) {
-        int u, v; cin >> u >> v;
-        cout << lca(u, v) << endl;
-    }
-    return 0;
-}
-```
-
----
-
-### 05. LCA Tarjan — 离线 + 并查集
-
-**代码模板**
-```cpp
-// 离线 Tarjan LCA（简化版）
-vector<pair<int,int>> q[N];  // 查询
-int ans[N], fa[N], vis[N];
-
-int find(int x) { return fa[x]==x ? x : fa[x]=find(fa[x]); }
-
-void tarjanLCA(int u, int p) {
-    vis[u] = true;
-    for (int v : g[u]) {
-        if (v == p) continue;
-        tarjanLCA(v, u);
-        fa[find(v)] = u;  // 合并到父节点
-    }
-    for (auto [v, id] : q[u])
-        if (vis[v]) ans[id] = find(v);
-}
-```
-
----
-
-### 07. 树剖求 LCA — 沿重链跳
-
-**代码模板**
-```cpp
-int top[N];  // 重链顶节点
-
-int lca(int u, int v) {
-    while (top[u] != top[v]) {
-        if (dep[top[u]] < dep[top[v]]) swap(u, v);
-        u = fa[top[u]];
-    }
-    return dep[u] < dep[v] ? u : v;
-}
-```
-
----
-
-## 三、树链剖分（06）
-
-### 06. 树链剖分 — 重链 / 轻链
-
-**概念**
-- 将树分解为若干条重链，支持树上路径操作
-- 配合线段树可以做区间修改/查询
-
-**代码模板**
-```cpp
-const int N = 100005;
-vector<int> g[N];
-int fa[N], dep[N], sz[N], son[N], top[N], dfn[N], rnk[N], timer;
-
-void dfs1(int u, int p) {
-    fa[u] = p; dep[u] = dep[p]+1; sz[u] = 1;
-    int maxSon = 0;
-    for (int v : g[u]) {
-        if (v == p) continue;
-        dfs1(v, u);
-        sz[u] += sz[v];
-        if (sz[v] > maxSon) { maxSon = sz[v]; son[u] = v; }
-    }
-}
-
-void dfs2(int u, int t) {
-    top[u] = t; dfn[u] = ++timer; rnk[timer] = u;
-    if (son[u]) dfs2(son[u], t);
-    for (int v : g[u])
-        if (v != fa[u] && v != son[u]) dfs2(v, v);
-}
-
-// 路径操作
-void modifyPath(int u, int v, int val) {
-    while (top[u] != top[v]) {
-        if (dep[top[u]] < dep[top[v]]) swap(u, v);
-        // 对 top[u]~u 这段区间操作
-        modify(1, dfn[top[u]], dfn[u], val);
-        u = fa[top[u]];
-    }
-    if (dep[u] > dep[v]) swap(u, v);
-    modify(1, dfn[u], dfn[v], val);
-}
-```
-
-**易错点**
-- 重儿子是子树最大的儿子
-- `top` 是当前链的顶节点
-- DFS 序是线段树的基础
-
----
-
-## 四、线段树与树状数组（08–12）
-
-### 08. 线段树 — 区间查询 / 单点修改
-
-**代码模板**
-```cpp
-const int N = 100005;
-struct SegTree {
-    int sum[N*4];
-    void build(int node, int l, int r, int a[]) {
-        if (l == r) { sum[node] = a[l]; return; }
-        int mid = (l+r)/2;
-        build(node*2, l, mid, a);
-        build(node*2+1, mid+1, r, a);
-        sum[node] = sum[node*2] + sum[node*2+1];
-    }
-    void update(int node, int l, int r, int pos, int val) {
-        if (l == r) { sum[node] += val; return; }
-        int mid = (l+r)/2;
-        if (pos <= mid) update(node*2, l, mid, pos, val);
-        else update(node*2+1, mid+1, r, pos, val);
-        sum[node] = sum[node*2] + sum[node*2+1];
-    }
-    int query(int node, int l, int r, int ql, int qr) {
-        if (ql <= l && r <= qr) return sum[node];
-        int mid = (l+r)/2, ans = 0;
-        if (ql <= mid) ans += query(node*2, l, mid, ql, qr);
-        if (qr > mid) ans += query(node*2+1, mid+1, r, ql, qr);
-        return ans;
-    }
-};
-```
-
----
-
-### 09. 区间修改 — lazy 标记
-
-**代码模板**
-```cpp
-struct LazySegTree {
-    long long sum[N*4], lazy[N*4];
-    void pushDown(int node, int l, int r) {
-        if (lazy[node]) {
-            int mid = (l+r)/2;
-            sum[node*2] += lazy[node]*(mid-l+1);
-            sum[node*2+1] += lazy[node]*(r-mid);
-            lazy[node*2] += lazy[node];
-            lazy[node*2+1] += lazy[node];
-            lazy[node] = 0;
-        }
-    }
-    void update(int node, int l, int r, int ql, int qr, int val) {
-        if (ql <= l && r <= qr) {
-            sum[node] += (long long)val*(r-l+1);
-            lazy[node] += val;
-            return;
-        }
-        pushDown(node, l, r);
-        int mid = (l+r)/2;
-        if (ql <= mid) update(node*2, l, mid, ql, qr, val);
-        if (qr > mid) update(node*2+1, mid+1, r, ql, qr, val);
-        sum[node] = sum[node*2] + sum[node*2+1];
-    }
-    long long query(int node, int l, int r, int ql, int qr) {
-        if (ql <= l && r <= qr) return sum[node];
-        pushDown(node, l, r);
-        int mid = (l+r)/2;
-        long long ans = 0;
-        if (ql <= mid) ans += query(node*2, l, mid, ql, qr);
-        if (qr > mid) ans += query(node*2+1, mid+1, r, ql, qr);
-        return ans;
-    }
-};
-```
-
----
-
-### 10. 树状数组 BIT — lowbit 思想
-
-**代码模板**
-```cpp
-int tree[N], n;
-int lowbit(int x) { return x & (-x); }
-
-void update(int i, int val) {
-    for (; i <= n; i += lowbit(i)) tree[i] += val;
-}
-
-int query(int i) {
-    int sum = 0;
-    for (; i > 0; i -= lowbit(i)) sum += tree[i];
-    return sum;
-}
-
-int query(int l, int r) { return query(r) - query(l-1); }
-```
-
----
-
-### 11. BIT 求逆序对
-
-**代码模板**
-```cpp
-// 离散化 + BIT 求逆序对
-long long invCount = 0;
-for (int i = n-1; i >= 0; i--) {
-    invCount += query(rnk[i]-1);  // 查询比 a[i] 小的已插入数量
-    update(rnk[i], 1);
-}
-```
-
----
-
-### 12. 二维 BIT
-
-**代码模板**
-```cpp
-int tree[N][N];
-void update(int x, int y, int val) {
-    for (int i = x; i <= n; i += lowbit(i))
-        for (int j = y; j <= m; j += lowbit(j))
-            tree[i][j] += val;
-}
-int query(int x, int y) {
-    int sum = 0;
-    for (int i = x; i > 0; i -= lowbit(i))
-        for (int j = y; j > 0; j -= lowbit(j))
-            sum += tree[i][j];
-    return sum;
-}
-```
-
----
-
-## 五、区间DP与状压DP（13–17）
-
-### 13. 区间 DP
-
-**概念**
-- 在区间 [l, r] 上做 DP，枚举分割点
-- 适用于合并相邻元素的问题
-
-**代码模板**
-```cpp
-// dp[i][j] = 合并 [i,j] 的最小代价
+// dp[i][j] 表示到达第 i 行第 j 列时的最大路径和
 int dp[N][N];
-for (int len = 2; len <= n; len++)
-    for (int i = 1; i+len-1 <= n; i++) {
-        int j = i+len-1;
-        dp[i][j] = INF;
-        for (int k = i; k < j; k++)
-            dp[i][j] = min(dp[i][j], dp[i][k]+dp[k+1][j]+cost(i,j));
-    }
-```
-
----
-
-### 14. 石子合并
-
-**代码模板**
-```cpp
-// 环形石子合并
-int a[N], s[N], dp[N][N];
-for (int i = 1; i <= n; i++) s[i] = s[i-1]+a[i];
-for (int len = 2; len <= n; len++)
-    for (int i = 1; i+len-1 <= n; i++) {
-        int j = i+len-1;
-        dp[i][j] = INF;
-        for (int k = i; k < j; k++)
-            dp[i][j] = min(dp[i][j], dp[i][k]+dp[k+1][j]+s[j]-s[i-1]);
-    }
-cout << dp[1][n] << endl;
-```
-
----
-
-### 15. 括号匹配 DP
-
-**代码模板**
-```cpp
-// 最长合法括号子串
-int dp[N];
+dp[0][0] = a[0][0];
 for (int i = 1; i < n; i++) {
-    if (s[i] == ')' && s[i-1] == '(')
-        dp[i] = (i >= 2 ? dp[i-2] : 0) + 2;
-    else if (s[i] == ')' && s[i-1] == ')' && s[i-dp[i-1]-1] == '(')
-        dp[i] = dp[i-1] + 2 + (i-dp[i-1]-2 >= 0 ? dp[i-dp[i-1]-2] : 0);
-}
-```
-
----
-
-### 16. 状压 DP — 位运算状态压缩
-
-**代码模板**
-```cpp
-// n 皇后（位运算版）
-int count = 0;
-void solve(int row, int ld, int rd, int n) {
-    if (row == n) { count++; return; }
-    int avail = ~(row | ld | rd) & ((1<<n)-1);
-    while (avail) {
-        int p = avail & (-avail);
-        avail -= p;
-        solve(row|p, (ld|p)<<1, (rd|p)>>1, n);
+    for (int j = 0; j <= i; j++) {
+        dp[i][j] = a[i][j];
+        if (j > 0) dp[i][j] = max(dp[i][j], dp[i-1][j-1] + a[i][j]);
+        dp[i][j] = max(dp[i][j], dp[i-1][j] + a[i][j]);
     }
 }
 ```
 
+**典型例题：01背包（二维写法）**
+
+```cpp
+// dp[i][j] 表示前 i 个物品、容量为 j 时的最大价值
+for (int i = 1; i <= n; i++) {
+    for (int j = 0; j <= W; j++) {
+        dp[i][j] = dp[i-1][j];  // 不选第 i 个
+        if (j >= w[i]) {
+            dp[i][j] = max(dp[i][j], dp[i-1][j-w[i]] + v[i]);  // 选第 i 个
+        }
+    }
+}
+```
+
+### 2.2 动态规划最值优化
+
+**概念：** 求最大值或最小值的 DP 问题，通常使用 `max()` / `min()` 进行状态转移。
+
+**核心思路：**
+- **最值型 DP** 的转移方程中包含 `max()` 或 `min()` 操作
+- 优化方法包括：**单调队列优化**、**决策单调性优化**、**斜率优化**等（GESP 七级要求掌握基本概念）
+
+**示例：最大子数组和（Kadane算法）**
+
+```cpp
+// dp[i] 表示以第 i 个元素结尾的最大子数组和
+int dp[N];
+dp[0] = a[0];
+for (int i = 1; i < n; i++) {
+    dp[i] = max(a[i], dp[i-1] + a[i]);
+}
+int ans = *max_element(dp, dp + n);
+```
+
+### 2.3 区间DP
+
+**概念：** 在一个区间 `[i, j]` 上进行决策，将区间分成两部分或更多部分进行合并，逐步扩大区间范围。
+
+**状态定义：** `dp[i][j]` 表示区间 `[i, j]` 上的最优解。
+
+**转移方程（通用形式）：**
+```
+dp[i][j] = min/max over all k in [i, j) of { dp[i][k] + dp[k+1][j] + cost(i,j,k) }
+```
+
+**典型例题：石子合并**
+
+```cpp
+// dp[i][j] 表示合并区间 [i, j] 的最小代价
+// sum[i][j] 表示区间 [i, j] 的石子总数
+for (int len = 2; len <= n; len++) {       // 区间长度
+    for (int i = 1; i + len - 1 <= n; i++) { // 左端点
+        int j = i + len - 1;                 // 右端点
+        dp[i][j] = INF;
+        for (int k = i; k < j; k++) {        // 枚举分割点
+            dp[i][j] = min(dp[i][j], dp[i][k] + dp[k+1][j] + sum[i][j]);
+        }
+    }
+}
+```
+
+**要点：**
+- 遍历顺序：**先枚举区间长度**，再枚举左端点，最后枚举分割点
+- 时间复杂度通常为 O(n³)
+
+### 2.4 最长递增子序列（LIS）
+
+**概念：** 在一个序列中找到最长的子序列，使得子序列中的元素严格递增。
+
+**方法一：O(n²) DP**
+
+```cpp
+// dp[i] 表示以第 i 个元素结尾的最长递增子序列长度
+int dp[N];
+for (int i = 0; i < n; i++) {
+    dp[i] = 1;
+    for (int j = 0; j < i; j++) {
+        if (a[j] < a[i]) {
+            dp[i] = max(dp[i], dp[j] + 1);
+        }
+    }
+}
+int ans = *max_element(dp, dp + n);
+```
+
+**方法二：O(n log n) 贪心 + 二分**
+
+```cpp
+vector<int> tail;  // tail[i] 表示长度为 i+1 的递增子序列的最小末尾
+for (int i = 0; i < n; i++) {
+    auto it = lower_bound(tail.begin(), tail.end(), a[i]);
+    if (it == tail.end()) {
+        tail.push_back(a[i]);
+    } else {
+        *it = a[i];
+    }
+}
+int ans = tail.size();
+```
+
+### 2.5 最长公共子序列（LCS）
+
+**概念：** 给定两个序列，找到它们的最长公共子序列（子序列不要求连续）。
+
+**状态转移方程：**
+```
+dp[i][j] = dp[i-1][j-1] + 1,                if a[i] == b[j]
+dp[i][j] = max(dp[i-1][j], dp[i][j-1]),     otherwise
+```
+
+```cpp
+int dp[N][N];
+for (int i = 1; i <= n; i++) {
+    for (int j = 1; j <= m; j++) {
+        if (a[i] == b[j]) {
+            dp[i][j] = dp[i-1][j-1] + 1;
+        } else {
+            dp[i][j] = max(dp[i-1][j], dp[i][j-1]);
+        }
+    }
+}
+cout << dp[n][m];  // 最长公共子序列的长度
+```
+
+**要点：**
+- 时间复杂度和空间复杂度均为 O(n×m)
+- 可通过路径回溯输出具体的 LCS 内容
+- 注意与**最长公共子串（连续）** 的区别
+
+### 2.6 滚动数组优化
+
+**概念：** 当 DP 状态转移只依赖于前一行（或前几行）时，可以用滚动数组将二维数组压缩为一维，节省空间。
+
+**原理：** `dp[i]` 只依赖 `dp[i-1]`，因此只需要两行交替使用，甚至只需要一行。
+
+**示例：01背包滚动数组优化**
+
+```cpp
+// 一维滚动数组（注意内层循环必须逆序！）
+int dp[W + 1];
+for (int i = 1; i <= n; i++) {
+    for (int j = W; j >= w[i]; j--) {  // 逆序！
+        dp[j] = max(dp[j], dp[j - w[i]] + v[i]);
+    }
+}
+```
+
+**LCS 滚动数组优化：**
+```cpp
+int dp[2][N];  // 只用两行
+for (int i = 1; i <= n; i++) {
+    for (int j = 1; j <= m; j++) {
+        if (a[i] == b[j]) {
+            dp[i%2][j] = dp[(i-1)%2][j-1] + 1;
+        } else {
+            dp[i%2][j] = max(dp[(i-1)%2][j], dp[i%2][j-1]);
+        }
+    }
+}
+cout << dp[n%2][m];
+```
+
+**要点：**
+- 空间复杂度从 O(n×m) 降至 O(m)
+- 01 背包必须**逆序遍历**，完全背包则**正序遍历**
+
 ---
 
-### 17. TSP 状压 — 旅行商问题
+## 三、图的定义及遍历
 
-**代码模板**
+### 3.1 图的基本概念
+
+**图（Graph）** 由**顶点（Vertex）** 和**边（Edge）** 组成，表示对象之间的关系。
+
+| 类型 | 特点 | 示例 |
+|------|------|------|
+| **有向图** | 边有方向，(A→B) 与 (B→A) 不同 | 社交网络中的关注关系 |
+| **无向图** | 边无方向，(A-B) 与 (B-A) 相同 | 地图上的道路 |
+
+**节点的度（Degree）：**
+- **无向图**：顶点 v 的度 = 与 v 相连的边的数量
+- **有向图**：
+  - **入度（In-degree）**：指向 v 的边的数量
+  - **出度（Out-degree）**：从 v 出发的边的数量
+
+### 3.2 图的存储方式
+
+**邻接矩阵：**
 ```cpp
-// TSP：从起点访问所有城市恰好一次再返回
-int dp[1<<N][N], g[N][N];
-int solve(int n) {
-    memset(dp, 0x3f, sizeof dp);
-    dp[1][0] = 0;  // 起点为 0
-    for (int S = 1; S < (1<<n); S++)
-        for (int u = 0; u < n; u++) {
-            if (!(S & (1<<u))) continue;
-            for (int v = 0; v < n; v++) {
-                if (S & (1<<v)) continue;
-                dp[S|(1<<v)][v] = min(dp[S|(1<<v)][v], dp[S][u]+g[u][v]);
+int graph[N][N];  // graph[i][j] 表示从 i 到 j 的边权
+```
+- 优点：查询边是否存在 O(1)
+- 缺点：空间复杂度 O(n²)，稀疏图浪费空间
+
+**邻接表：**
+```cpp
+vector<int> graph[N];  // graph[i] 存储与 i 相邻的顶点
+// 有权图：
+vector<pair<int,int>> graph[N];  // graph[i] 存储 (邻居, 边权)
+```
+- 优点：空间复杂度 O(n + m)，适合稀疏图
+- 缺点：查询边是否存在需要 O(degree)
+
+### 3.3 深度优先搜索（DFS）
+
+**概念：** 从一个顶点出发，沿一条路径尽可能深地探索，直到无法继续再回溯。
+
+**递归实现：**
+```cpp
+bool visited[N];
+vector<int> graph[N];
+
+void dfs(int u) {
+    visited[u] = true;
+    cout << u << " ";
+    for (int v : graph[u]) {
+        if (!visited[v]) {
+            dfs(v);
+        }
+    }
+}
+```
+
+**非递归实现（使用栈）：**
+```cpp
+void dfs(int start) {
+    stack<int> st;
+    st.push(start);
+    visited[start] = true;
+    while (!st.empty()) {
+        int u = st.top(); st.pop();
+        cout << u << " ";
+        for (int v : graph[u]) {
+            if (!visited[v]) {
+                visited[v] = true;
+                st.push(v);
             }
         }
-    int ans = INF;
-    for (int u = 0; u < n; u++)
-        ans = min(ans, dp[(1<<n)-1][u]+g[u][0]);
-    return ans;
+    }
 }
 ```
 
----
+**特点：**
+- 时间复杂度：O(n + m)，n 为顶点数，m 为边数
+- 适用于：路径搜索、连通性判断、回溯类问题
 
-## 六、字符串算法（18–24）
+### 3.4 广度优先搜索（BFS）
 
-### 18. 字符串哈希
+**概念：** 从一个顶点出发，先访问所有距离为 1 的顶点，再访问距离为 2 的顶点，依此类推。
 
-**代码模板**
 ```cpp
-const long long B = 131, P = 1e9+7;
-long long h[N], pw[N];
-
-void init(string& s) {
-    pw[0] = 1;
-    for (int i = 1; i <= s.size(); i++) {
-        h[i] = (h[i-1]*B + s[i-1]) % P;
-        pw[i] = pw[i-1]*B % P;
-    }
-}
-
-long long getHash(int l, int r) {  // 1-indexed
-    return (h[r] - h[l-1]*pw[r-l+1] % P + P) % P;
-}
-```
-
----
-
-### 19. 双哈希
-
-**代码模板**
-```cpp
-struct DoubleHash {
-    long long h1[N], h2[N];
-    const long long B1=131, B2=137, P1=1e9+7, P2=1e9+9;
-    void init(string& s) {
-        h1[0] = h2[0] = 0;
-        for (int i = 1; i <= s.size(); i++) {
-            h1[i] = (h1[i-1]*B1+s[i-1])%P1;
-            h2[i] = (h2[i-1]*B2+s[i-1])%P2;
-        }
-    }
-    pair<long long,long long> get(int l, int r) {
-        // 返回哈希值对
-    }
-};
-```
-
----
-
-### 20. KMP
-
-**代码模板**
-```cpp
-int ne[N];  // next 数组
-void getNext(string& p) {
-    int m = p.size();
-    ne[0] = -1;
-    for (int i = 1, j = -1; i < m; i++) {
-        while (j >= 0 && p[j+1] != p[i]) j = ne[j];
-        if (p[j+1] == p[i]) j++;
-        ne[i] = j;
-    }
-}
-
-int kmp(string& s, string& p) {
-    int n = s.size(), m = p.size();
-    getNext(p);
-    for (int i = 0, j = -1; i < n; i++) {
-        while (j >= 0 && p[j+1] != s[i]) j = ne[j];
-        if (p[j+1] == s[i]) j++;
-        if (j == m-1) {
-            cout << "匹配位置: " << i-m+1 << endl;
-            j = ne[j];
+void bfs(int start) {
+    queue<int> q;
+    q.push(start);
+    visited[start] = true;
+    while (!q.empty()) {
+        int u = q.front(); q.pop();
+        cout << u << " ";
+        for (int v : graph[u]) {
+            if (!visited[v]) {
+                visited[v] = true;
+                q.push(v);
+            }
         }
     }
 }
 ```
 
----
+**特点：**
+- 时间复杂度：O(n + m)
+- 适用于：**无权图的最短路径**、层序遍历、最短步数问题
 
-### 21. Z 函数
+### 3.5 泛洪填充（Flood Fill）
 
-**代码模板**
+**概念：** 从一个种子点出发，将与其相连的、满足条件的区域全部标记或填充。类似于"油漆桶"工具。
+
+**典型应用：**
+- 连通块计数（如计算地图上有多少个独立的区域）
+- 图像处理中的区域填充
+- 围棋中的气的计算
+
 ```cpp
-vector<int> zFunction(string& s) {
-    int n = s.size();
-    vector<int> z(n, 0);
-    z[0] = n;
-    for (int i = 1, l = 0, r = 0; i < n; i++) {
-        if (i < r) z[i] = min(r-i, z[i-l]);
-        while (i+z[i] < n && s[z[i]] == s[i+z[i]]) z[i]++;
-        if (i+z[i] > r) { l = i; r = i+z[i]; }
+// 统计连通块数量
+int count = 0;
+for (int i = 0; i < n; i++) {
+    for (int j = 0; j < m; j++) {
+        if (!visited[i][j] && grid[i][j] == '.') {
+            bfs(i, j);  // 或 dfs(i, j)
+            count++;
+        }
     }
-    return z;
+}
+cout << "连通块数量: " << count << endl;
+```
+
+**四方向移动：**
+```cpp
+int dx[] = {0, 0, 1, -1};
+int dy[] = {1, -1, 0, 0};
+
+bool isValid(int x, int y) {
+    return x >= 0 && x < n && y >= 0 && y < m;
 }
 ```
 
 ---
 
-### 22. 字典树 Trie
+## 四、哈希表的概念与知识及其应用
 
-**代码模板**
+### 4.1 哈希表的基本概念
+
+**哈希表（Hash Table）** 是一种通过**哈希函数**将键（Key）映射到数组下标，从而实现快速查找的数据结构。
+
+**核心思想：** `下标 = Hash(键) % 表长`
+
+| 操作 | 平均时间复杂度 | 最坏时间复杂度 |
+|------|--------------|--------------|
+| 插入 | O(1) | O(n) |
+| 查找 | O(1) | O(n) |
+| 删除 | O(1) | O(n) |
+
+### 4.2 常见的哈希函数
+
+| 哈希函数 | 适用场景 | 公式 |
+|---------|---------|------|
+| 直接定址法 | 键值范围较小 | `H(key) = key` |
+| 除留余数法 | 通用 | `H(key) = key % p`（p 为质数） |
+| 平方取中法 | 键值分布不均匀 | 取 key² 的中间几位 |
+| 字符串哈希 | 字符串键 | 如 BKDRHash、DJBHash |
+
+**字符串哈希示例（BKDRHash）：**
 ```cpp
-int ch[N][26], tot, cnt[N];
-
-void insert(string s) {
-    int p = 0;
+unsigned int BKDRHash(string s) {
+    unsigned int seed = 131;
+    unsigned int hash = 0;
     for (char c : s) {
-        int k = c-'a';
-        if (!ch[p][k]) ch[p][k] = ++tot;
-        p = ch[p][k];
+        hash = hash * seed + c;
     }
-    cnt[p]++;
-}
-
-int query(string s) {
-    int p = 0;
-    for (char c : s) {
-        int k = c-'a';
-        if (!ch[p][k]) return 0;
-        p = ch[p][k];
-    }
-    return cnt[p];
+    return hash;
 }
 ```
 
----
+### 4.3 哈希冲突及解决方法
 
-### 23. 01-Trie — 异或最大值
+**哈希冲突：** 不同的键经过哈希函数后映射到相同的下标。
 
-**代码模板**
+**方法一：链地址法（拉链法）**
+
+每个位置存储一个链表（或 vector），冲突的元素追加到链表中。
+
 ```cpp
-int trie[N*32][2], tot;
-void insert(int x) {
-    int p = 0;
-    for (int i = 30; i >= 0; i--) {
-        int b = (x>>i)&1;
-        if (!trie[p][b]) trie[p][b] = ++tot;
-        p = trie[p][b];
-    }
+const int MOD = 10007;
+vector<int> hashTable[MOD];
+
+void insert(int key) {
+    int idx = key % MOD;
+    hashTable[idx].push_back(key);
 }
-int queryMax(int x) {
-    int p = 0, ans = 0;
-    for (int i = 30; i >= 0; i--) {
-        int b = (x>>i)&1;
-        if (trie[p][b^1]) { ans |= (1<<i); p = trie[p][b^1]; }
-        else p = trie[p][b];
+
+bool search(int key) {
+    int idx = key % MOD;
+    for (int x : hashTable[idx]) {
+        if (x == key) return true;
     }
-    return ans;
+    return false;
 }
 ```
 
----
+**方法二：开放定址法（线性探测）**
 
-### 24. 后缀数组雏形
+冲突时向后探测下一个空位。
 
-**代码模板**
 ```cpp
-int sa[N], rnk[N], tmp[N];
-void buildSA(string& s) {
-    int n = s.size();
-    for (int i = 0; i < n; i++) { sa[i] = i; rnk[i] = s[i]; }
-    for (int k = 1; k < n; k <<= 1) {
-        auto cmp = [&](int a, int b) {
-            if (rnk[a] != rnk[b]) return rnk[a] < rnk[b];
-            int ra = a+k<n ? rnk[a+k] : -1;
-            int rb = b+k<n ? rnk[b+k] : -1;
-            return ra < rb;
-        };
-        sort(sa, sa+n, cmp);
-        tmp[sa[0]] = 0;
-        for (int i = 1; i < n; i++)
-            tmp[sa[i]] = tmp[sa[i-1]] + (cmp(sa[i-1],sa[i]) ? 1 : 0);
-        for (int i = 0; i < n; i++) rnk[i] = tmp[i];
+const int MOD = 10007;
+int table[MOD];
+bool used[MOD];
+
+void insert(int key) {
+    int idx = key % MOD;
+    while (used[idx]) {
+        idx = (idx + 1) % MOD;  // 线性探测
+    }
+    table[idx] = key;
+    used[idx] = true;
+}
+
+bool search(int key) {
+    int idx = key % MOD;
+    while (used[idx]) {
+        if (table[idx] == key) return true;
+        idx = (idx + 1) % MOD;
+    }
+    return false;
+}
+```
+
+### 4.4 装填因子
+
+**装填因子（Load Factor）** α = 已存元素个数 / 表长
+
+- α 越小，冲突越少，但空间浪费越多
+- α 越大，空间利用率高，但冲突增多
+- 一般建议 α ≤ 0.75
+- 当 α 超过阈值时，需要进行**扩容**（通常将表长扩大一倍，并重新哈希所有元素）
+
+### 4.5 哈希表的应用
+
+**应用一：快速查找与去重**
+```cpp
+// 统计不重复元素的数量
+set<int> seen;  // 底层为红黑树，也可用 unordered_set（哈希表）
+int count = 0;
+for (int x : arr) {
+    if (seen.find(x) == seen.end()) {
+        seen.insert(x);
+        count++;
     }
 }
 ```
 
----
-
-## 七、区间最值（25）
-
-### 25. 区间最值 RMQ — Sparse Table
-
-**代码模板**
+**应用二：计数与频率统计**
 ```cpp
-int st[N][LOG], a[N];
-
-void build(int n) {
-    for (int i = 0; i < n; i++) st[i][0] = a[i];
-    for (int j = 1; (1<<j) <= n; j++)
-        for (int i = 0; i+(1<<j)-1 < n; i++)
-            st[i][j] = max(st[i][j-1], st[i+(1<<(j-1))][j-1]);
+// 统计每个字符出现的次数
+unordered_map<char, int> freq;
+for (char c : s) {
+    freq[c]++;
 }
+```
 
-int query(int l, int r) {
-    int k = __lg(r-l+1);
-    return max(st[l][k], st[r-(1<<k)+1][k]);
+**应用三：两数之和（经典问题）**
+```cpp
+// 找到数组中两个数使其和为 target
+unordered_map<int, int> mp;  // 值 -> 下标
+for (int i = 0; i < n; i++) {
+    int complement = target - a[i];
+    if (mp.find(complement) != mp.end()) {
+        cout << mp[complement] << " " << i << endl;
+    }
+    mp[a[i]] = i;
+}
+```
+
+**应用四：子数组和（前缀和 + 哈希）**
+```cpp
+// 找到和为 k 的连续子数组个数
+unordered_map<int, int> mp;
+mp[0] = 1;
+int sum = 0, count = 0;
+for (int i = 0; i < n; i++) {
+    sum += a[i];
+    if (mp.find(sum - k) != mp.end()) {
+        count += mp[sum - k];
+    }
+    mp[sum]++;
 }
 ```
 
 ---
 
-## 附录：GESP L7 考点速查表
+## 总结
 
-| 编号 | 考点 | 关键词 |
-|:---:|:---|:---|
-| 01 | 强连通分量 Tarjan | dfn/low + 栈 |
-| 02 | Kosaraju | 正反两次 DFS |
-| 03 | 缩点 | SCC → DAG |
-| 04 | LCA 倍增 | fa[k][v] 父亲表 |
-| 05 | LCA Tarjan | 离线 + 并查集 |
-| 06 | 树链剖分 | 重链/轻链 |
-| 07 | 树剖求 LCA | 沿重链跳 |
-| 08 | 线段树 | 区间查询/单点修改 |
-| 09 | 区间修改 | lazy 标记 |
-| 10 | 树状数组 BIT | lowbit 思想 |
-| 11 | BIT 求逆序对 | 离散化+BIT |
-| 12 | 二维 BIT | 二维前缀和 |
-| 13 | 区间 DP | 枚举分割点 |
-| 14 | 石子合并 | 经典区间 DP |
-| 15 | 括号匹配 DP | 最长合法子串 |
-| 16 | 状压 DP | 位运算状态压缩 |
-| 17 | TSP 状压 | 旅行商问题 |
-| 18 | 字符串哈希 | 多项式哈希 |
-| 19 | 双哈希 | 降低冲突 |
-| 20 | KMP | 字符串匹配 |
-| 21 | Z 函数 | 最长公共前缀 |
-| 22 | 字典树 Trie | 前缀树 |
-| 23 | 01-Trie | 异或最大值 |
-| 24 | 后缀数组雏形 | 后缀排序 |
-| 25 | 区间最值 RMQ | Sparse Table |
+| 知识板块 | 核心内容 |
+|---------|---------|
+| 数学库常用函数 | sin/cos、log10/log2、exp/pow/sqrt，参数与精度 |
+| 复杂动态规划 | 二维DP、最值优化、区间DP、LIS/LCS、滚动数组 |
+| 图的定义及遍历 | 有向图/无向图、度、邻接矩阵/表、DFS/BFS、泛洪填充 |
+| 哈希表 | 哈希函数、冲突解决（链地址/开放定址）、装填因子、应用 |
 
 ---
 
+*本文档仅供 GESP 七级备考参考，如有疑问请以官方最新大纲为准。*
