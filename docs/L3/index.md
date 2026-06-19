@@ -632,10 +632,10 @@ int main() {
 
 | 函数 | 功能 | 头文件 |
 |:---:|:---:|:---:|
-| `strlen(s)` | 返回字符串长度（不含\0） | `&lt;cstring&gt;` |
-| `strcpy(dest, src)` | 复制字符串 | `&lt;cstring&gt;` |
-| `strcat(dest, src)` | 连接字符串 | `&lt;cstring&gt;` |
-| `strcmp(s1, s2)` | 比较字符串（返回0相等，>0前大，<0后大） | `&lt;cstring&gt;` |
+| `strlen(s)` | 返回字符串长度（不含\0） | `\<cstring\>` |
+| `strcpy(dest, src)` | 复制字符串 | `\<cstring\>` |
+| `strcat(dest, src)` | 连接字符串 | `\<cstring\>` |
+| `strcmp(s1, s2)` | 比较字符串（返回0相等，>0前大，<0后大） | `\<cstring\>` |
 
 ```cpp
 #include <iostream>
@@ -787,13 +787,13 @@ int main() {
 
 | 头文件 | 用途 |
 |:---:|:---:|
-| `&lt;iostream&gt;` | 输入输出流（cin, cout） |
-| `&lt;cstring&gt;` | C风格字符串函数（strlen, strcpy等） |
-| `&lt;string&gt;` | C++ string类 |
-| `&lt;cmath&gt;` | 数学函数（sqrt, abs等） |
-| `&lt;algorithm&gt;` | 算法（swap, sort等） |
+| `\<iostream\>` | 输入输出流（cin, cout） |
+| `\<cstring\>` | C风格字符串函数（strlen, strcpy等） |
+| `\<string\>` | C++ string类 |
+| `\<cmath\>` | 数学函数（sqrt, abs等） |
+| `\<algorithm\>` | 算法（swap, sort等） |
 | `<cctype>` | 字符处理（isalpha, isdigit等） |
-| `&lt;cstdlib&gt;` | 通用工具（rand, srand等） |
+| `\<cstdlib\>` | 通用工具（rand, srand等） |
 
 ---
 

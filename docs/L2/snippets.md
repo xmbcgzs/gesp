@@ -32,7 +32,7 @@ int main() {
 }
 ```
 
-**要点**：`abs()` 用于整数取绝对值，浮点数应使用 `fabs()`。`sqrt()` 和 `pow()` 头文件为 `&lt;cmath&gt;`，参数和返回值均为 `double` 类型。使用前须 `#include &lt;cmath&gt;`。
+**要点**：`abs()` 用于整数取绝对值，浮点数应使用 `fabs()`。`sqrt()` 和 `pow()` 头文件为 `\<cmath\>`，参数和返回值均为 `double` 类型。使用前须 `#include \<cmath\>`。
 
 ---
 
@@ -66,7 +66,7 @@ int main() {
 }
 ```
 
-**要点**：`max(a, b)` 和 `min(a, b)` 头文件为 `&lt;algorithm&gt;`，要求两个参数类型相同。三个数取最值可用嵌套调用 `max(a, max(b, c))`。也可用三目运算符 `(a > b) ? a : b` 实现。
+**要点**：`max(a, b)` 和 `min(a, b)` 头文件为 `\<algorithm\>`，要求两个参数类型相同。三个数取最值可用嵌套调用 `max(a, max(b, c))`。也可用三目运算符 `(a > b) ? a : b` 实现。
 
 ---
 

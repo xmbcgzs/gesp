@@ -651,7 +651,7 @@ int main() {
 
 ### 7.1 头文件与函数列表
 
-使用数学函数需包含头文件：`#include &lt;cmath&gt;` 或 `#include <math.h>`
+使用数学函数需包含头文件：`#include \<cmath\>` 或 `#include <math.h>`
 
 | 函数 | 功能 | 示例 | 结果 |
 |:---:|:---|:---:|:---:|
@@ -790,7 +790,7 @@ int main() {
 - `pow()` 返回 `double` 类型，需注意类型转换
 - `ceil(-3.2)` = -3（向正无穷方向取整），`floor(-3.2)` = -4（向负无穷方向取整）
 - `max` / `min` 函数参数类型必须相同
-- 使用 `sqrt` 和 `pow` 需要包含 `&lt;cmath&gt;` 头文件
+- 使用 `sqrt` 和 `pow` 需要包含 `\<cmath\>` 头文件
 
 ---
 
@@ -804,4 +804,4 @@ int main() {
 | ASCII编码 | '0'=48, 'A'=65, 'a'=97；大小写差32；字符↔ASCII码转换 |
 | 数据类型转换 | 隐式转换规则：char→int→float→double；强制转换`(int)x`；整数除法截断 |
 | 多层分支/循环 | if嵌套/else-if链；switch嵌套/break穿透；for/while/do-while嵌套；break/continue |
-| 常用数学函数 | abs/sqrt/pow/ceil/floor/max/min；头文件`&lt;cmath&gt;`；四舍五入与取整区别 |
+| 常用数学函数 | abs/sqrt/pow/ceil/floor/max/min；头文件`\<cmath\>`；四舍五入与取整区别 |

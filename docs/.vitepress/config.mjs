@@ -10,6 +10,13 @@ export default defineConfig({
   // 基础 URL（GitHub Pages）
   base: '/gesp/',
   
+  // 数学公式支持
+  head: [
+    ['link', { rel: 'stylesheet', href: 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css' }],
+    ['script', { src: 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js' }],
+    ['script', { src: 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js', onload: 'renderMathInElement(document.body, {delimiters: [{left: "$$", right: "$$", display: true},{left: "$", right: "$", display: false}]})' }],
+  ],
+  
   // 主题配置
   themeConfig: {
     // 网站标题
@@ -233,57 +240,33 @@ export default defineConfig({
       ],
       '/L6/': [
         {
-          text: 'L6 高级 (34个考点)',
+          text: 'L6 高级 (18个知识点)',
           items: [
-            { text: 'STL 容器', items: [
-              { text: '01 STL vector', link: '/L6/#01-stl-vector' },
-              { text: '02 STL deque', link: '/L6/#02-stl-deque' },
-              { text: '03 STL stack/queue', link: '/L6/#03-stl-stack--queue' },
-              { text: '04 STL priority_queue', link: '/L6/#04-stl-priority_queue' },
-              { text: '05 STL set/multiset', link: '/L6/#05-stl-set--multiset' },
-              { text: '06 STL map/multimap', link: '/L6/#06-stl-map--multimap' },
-              { text: '07 STL unordered_set/map', link: '/L6/#07-stl-unordered_setmap' },
-              { text: '08 STL pair/tuple', link: '/L6/#08-stl-pair--tuple' },
-              { text: '09 STL bitset', link: '/L6/#09-stl-bitset' },
+            { text: '一、树', items: [
+              { text: '1 树的基本概念', link: '/L6/#1-树的基本概念' },
+              { text: '2 二叉树遍历', link: '/L6/#2-二叉树遍历' },
+              { text: '3 二叉搜索树', link: '/L6/#3-二叉搜索树' },
+              { text: '4 哈夫曼树', link: '/L6/#4-哈夫曼树' },
             ]},
-            { text: 'STL 算法', items: [
-              { text: '10 sort/stable_sort', link: '/L6/#10-sort--stable_sort' },
-              { text: '11 lower_bound/upper_bound', link: '/L6/#11-lower_bound--upper_bound' },
-              { text: '12 unique', link: '/L6/#12-unique' },
-              { text: '13 next_permutation', link: '/L6/#13-next_permutation' },
+            { text: '二、图', items: [
+              { text: '5 图的存储与遍历', link: '/L6/#5-图的存储与遍历' },
+              { text: '6 最短路径', link: '/L6/#6-最短路径' },
+              { text: '7 最小生成树', link: '/L6/#7-最小生成树' },
             ]},
-            { text: '复杂度与前缀和', items: [
-              { text: '14 复杂度分析', link: '/L6/#14-复杂度分析' },
-              { text: '15 前缀和', link: '/L6/#15-前缀和' },
-              { text: '16 差分数组', link: '/L6/#16-差分数组' },
+            { text: '三、排序', items: [
+              { text: '8 比较排序', link: '/L6/#8-比较排序' },
+              { text: '9 非比较排序', link: '/L6/#9-非比较排序' },
             ]},
-            { text: '二分与离散化', items: [
-              { text: '17 二分答案', link: '/L6/#17-二分答案' },
-              { text: '18 离散化', link: '/L6/#18-离散化' },
-            ]},
-            { text: '动态规划', items: [
-              { text: '19 LIS', link: '/L6/#19-lis' },
-              { text: '20 LCS', link: '/L6/#20-lcs' },
-              { text: '21 0-1背包/完全背包', link: '/L6/#21-0-1-背包--完全背包' },
-            ]},
-            { text: '图论', items: [
-              { text: '22 图存储', link: '/L6/#22-图存储' },
-              { text: '23 拓扑排序', link: '/L6/#23-拓扑排序' },
-              { text: '24 Dijkstra', link: '/L6/#24-dijkstra' },
-              { text: '25 Floyd', link: '/L6/#25-floyd' },
-              { text: '26 SPFA', link: '/L6/#26-spfa' },
-              { text: '27 Kruskal', link: '/L6/#27-kruskal' },
-              { text: '28 Prim', link: '/L6/#28-prim' },
-              { text: '29 并查集', link: '/L6/#29-并查集' },
-            ]},
-            { text: '单调数据结构', items: [
-              { text: '30 单调栈', link: '/L6/#30-单调栈' },
-              { text: '31 单调队列', link: '/L6/#31-单调队列' },
-            ]},
-            { text: '数论', items: [
-              { text: '32 数学基础', link: '/L6/#32-数学基础' },
-              { text: '33 快速幂', link: '/L6/#33-快速幂' },
-              { text: '34 欧拉筛', link: '/L6/#34-欧拉筛' },
+            { text: '四、查找与字符串', items: [
+              { text: '10 二分查找', link: '/L6/#10-二分查找' },
+              { text: '11 STL容器', link: '/L6/#11-stl容器' },
+              { text: '12 高级排序算法', link: '/L6/#12-高级排序算法' },
+              { text: '13 递归与分治', link: '/L6/#13-递归与分治' },
+              { text: '14 回溯算法', link: '/L6/#14-回溯算法' },
+              { text: '15 贪心算法', link: '/L6/#15-贪心算法' },
+              { text: '16 字符串处理', link: '/L6/#16-字符串处理' },
+              { text: '17 概率与统计', link: '/L6/#17-概率与统计' },
+              { text: '18 综合应用', link: '/L6/#18-综合应用' },
             ]},
           ]
         }
