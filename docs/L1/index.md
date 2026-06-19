@@ -680,3 +680,58 @@ cout << (double)7 / 2 << endl; // 3.5
 - 整数除法 `7 / 2 = 3`，不是 3.5
 
 
+
+---
+
+### 20. 常用库函数 — abs / max / min / swap / sqrt / pow
+
+**概念**
+- 标准库提供大量现成函数，避免重复造轮子
+- 使用前需包含对应头文件
+
+**常用函数**
+| 函数 | 头文件 | 功能 | 示例 |
+|:---|:---:|:---|:---|
+| `abs(x)` | `<cmath>` | 绝对值 | `abs(-5)` → 5 |
+| `max(a,b)` | `<algorithm>` | 较大值 | `max(3,5)` → 5 |
+| `min(a,b)` | `<algorithm>` | 较小值 | `min(3,5)` → 3 |
+| `swap(a,b)` | `<algorithm>` | 交换两值 | `swap(a,b)` |
+| `sqrt(x)` | `<cmath>` | 平方根 | `sqrt(16.0)` → 4.0 |
+| `pow(a,b)` | `<cmath>` | 幂运算 | `pow(2,3)` → 8.0 |
+| `round(x)` | `<cmath>` | 四舍五入 | `round(3.5)` → 4.0 |
+| `floor(x)` | `<cmath>` | 向下取整 | `floor(3.7)` → 3.0 |
+
+**代码模板**
+```cpp
+#include <iostream>
+#include <cmath>
+#include <algorithm>
+using namespace std;
+
+int main() {
+    cout << abs(-5) << endl;       // 5
+    cout << max(3, 5) << endl;     // 5
+    cout << min(3, 5) << endl;     // 3
+    
+    int a = 3, b = 5;
+    swap(a, b);                    // a=5, b=3
+    
+    cout << sqrt(16.0) << endl;    // 4.0
+    cout << pow(2, 10) << endl;    // 1024.0
+    cout << round(3.5) << endl;    // 4.0
+    
+    // 判断闰年（综合运用）
+    int y;
+    cin >> y;
+    if ((y % 4 == 0 && y % 100 != 0) || y % 400 == 0)
+        cout << "闰年";
+    else
+        cout << "平年";
+    return 0;
+}
+```
+
+**易错点**
+- `abs()` 对整数取绝对值，浮点数用 `fabs()`
+- `pow()` 返回 `double`，注意精度问题
+- `round()` 是四舍五入，`floor()` 是向下取整
