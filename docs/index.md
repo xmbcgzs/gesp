@@ -3,8 +3,8 @@ layout: home
 
 hero:
   name: "GESP C++ 知识点"
-  text: "等级考试知识点整理 L1-L8"
-  tagline: 中国计算机学会 GESP C++ 等级考试 · 共 197 个考点 · 代码模板可复制
+  text: "等级考试知识点整理 L1-L8 + NOI 竞赛"
+  tagline: 中国计算机学会 GESP C++ 等级考试 · 共 197 个考点 · 代码模板可复制 · NOI 竞赛知识点
   actions:
     - theme: brand
       text: 从 L1 开始
@@ -12,6 +12,9 @@ hero:
     - theme: alt
       text: L6 高级
       link: /L6/
+    - theme: alt
+      text: 🏆 NOI 入门组
+      link: /noi-j/
     - theme: alt
       text: GitHub
       link: https://github.com/xmbcgzs/gesp
@@ -49,5 +52,16 @@ features:
     title: L8 顶级
     details: AC自动机、后缀数组、网络流、计算几何、多项式
     link: /L8/
+  - icon: 🏆
+    title: NOI 入门组
+    details: CSP-J 入门级 · 基础语法、数据结构、算法入门、数论
+    link: /noi-j/
+  - icon: 🥈
+    title: NOI 提高级
+    details: CSP-S · 高级STL、图论、DP、字符串、数论、线性代数
+    link: /noi-s/
+  - icon: 🥇
+    title: NOI 级
+    details: NOI及以上 · 树链剖分、网络流、DP优化、博弈论、信息论
+    link: /noi-level/
 ---
-
