@@ -2403,7 +2403,7 @@ int heuristic(int x1, int y1, int x2, int y2) {
 int main() {
     // 示例：在网格中找最短路径
     int n = 5;
-    vector<string> grid = {
+    vector&lt;string&gt; grid = {
         ".....",
         ".##..",
         ".##..",

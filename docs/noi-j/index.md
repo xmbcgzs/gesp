@@ -181,7 +181,7 @@ int main() {
 
 ### 知识点3：头文件与名字空间
 
-- **头文件**：包含函数声明和类定义，如 `<iostream>`, `<cmath>`, `<algorithm>`
+- **头文件**：包含函数声明和类定义，如 `&lt;iostream&gt;`, `&lt;cmath&gt;`, `&lt;algorithm&gt;`
 - **万能头文件**：`<bits/stdc++.h>` 包含所有标准库
 - **名字空间**：`using namespace std;` 使用标准命名空间，避免 `std::cout` 的繁琐写法
 

@@ -1214,7 +1214,7 @@ int query(const string &s) {
 
 int main() {
     string text = "sayheysheher";
-    vector<string> patterns = {"he", "she", "her"};
+    vector&lt;string&gt; patterns = {"he", "she", "her"};
 
     for (auto &p : patterns) insert(p);
     buildFail();
@@ -1385,7 +1385,7 @@ int main() {
     int n, m;
     cin >> n >> m;
 
-    vector<string> grid(n);
+    vector&lt;string&gt; grid(n);
     for (int i = 0; i < n; i++) cin >> grid[i];
 
     int sx, sy, ex, ey;
